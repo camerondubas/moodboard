@@ -1,0 +1,18 @@
+[package]
+name = "moodboard"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+game = { path = "game" }
+leptos = "0.5.2"
+web = { path = "web" }
+shared = { path = "shared" }
+
+
+[workspace]
+resolver = "2" # Important! wgpu/Bevy needs this!
+
+members = ["game", "web", "shared"]
