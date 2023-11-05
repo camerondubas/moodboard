@@ -1,12 +1,13 @@
-<!DOCTYPE html><html><head>
-<link rel="preload" href="/moodboard-cf7ca15055eeacf6_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/moodboard-cf7ca15055eeacf6.js"></head>
+<!DOCTYPE html><html class="dark"><head>
+  <title>Rusty Moodboard</title>
+  <link rel="stylesheet" href="/input-5f1c6501816bafa1.css">
 
-<body>
-  <canvas id="bevy"></canvas>
+<link rel="preload" href="/moodboard-aedbb4f3c4ffd982_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/moodboard-aedbb4f3c4ffd982.js"></head>
 
+<body class="bg-slate-200 dark:bg-slate-900">
 
-<script type="module">import init from '/moodboard-cf7ca15055eeacf6.js';init('/moodboard-cf7ca15055eeacf6_bg.wasm');</script><script>(function () {
+<script type="module">import init from '/moodboard-aedbb4f3c4ffd982.js';init('/moodboard-aedbb4f3c4ffd982_bg.wasm');</script><script>(function () {
     var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var url = protocol + '//' + window.location.host + '/_trunk/ws';
     var poll_interval = 5000;

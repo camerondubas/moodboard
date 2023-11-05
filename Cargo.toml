@@ -7,12 +7,17 @@ edition = "2021"
 
 [dependencies]
 game = { path = "game" }
-leptos = "0.5.2"
-web = { path = "web" }
 shared = { path = "shared" }
-
+leptos = { version = "0.5.2", features = ["csr", "nightly"] }
 
 [workspace]
-resolver = "2" # Important! wgpu/Bevy needs this!
+resolver = "2"               # Important! wgpu/Bevy needs this!
+members = ["game", "shared"]
 
-members = ["game", "web", "shared"]
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3

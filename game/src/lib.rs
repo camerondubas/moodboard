@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_fps_counter::{FpsCounter, FpsCounterPlugin};
 use shared::{CounterEvent, Shared, SharedState};
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
@@ -11,6 +12,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             ..default()
         }))
         .add_plugins(event_plugin)
+        .add_plugins(FpsCounterPlugin)
         .insert_resource(SharedResource(shared_state))
         .add_systems(Startup, setup)
         .add_systems(Update, punch_cube)
@@ -28,7 +30,10 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     resource: Res<SharedResource>,
+    mut fps: ResMut<FpsCounter>,
 ) {
+    fps.enable();
+
     let name = resource.0.lock().unwrap().name.clone();
     commands.spawn(PbrBundle {
         mesh: meshes.add(shape::Plane::from_size(5.0).into()),
