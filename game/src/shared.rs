@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use std::sync::{Arc, Mutex};
 
+use crate::theme::Theme;
+
 #[derive(Debug)]
 pub struct SharedState {
     pub name: String,
@@ -13,11 +15,17 @@ pub type Shared<T> = Arc<Mutex<T>>;
 #[derive(Debug)]
 pub enum InputEvent {
     Counter(CounterEvent),
+    Theme(ThemeEvent),
 }
 
 #[derive(Clone, Debug, Event)]
 pub struct CounterEvent {
     pub value: i32,
+}
+
+#[derive(Clone, Debug, Event)]
+pub struct ThemeEvent {
+    pub theme: Theme,
 }
 
 #[derive(Debug)]
@@ -78,6 +86,7 @@ impl Plugin for DuplexEventsPlugin {
         app.insert_resource(rx_input_event)
             .insert_resource(tx_output_event)
             .init_resource::<Events<CounterEvent>>()
+            .init_resource::<Events<ThemeEvent>>()
             .add_systems(PreUpdate, input_events_system);
     }
 }
@@ -85,11 +94,15 @@ impl Plugin for DuplexEventsPlugin {
 fn input_events_system(
     rx_input_event: Res<RxInputEvent>,
     mut counter_event_writer: EventWriter<CounterEvent>,
+    mut theme_event_writer: EventWriter<ThemeEvent>,
 ) {
     for input_event in rx_input_event.try_iter() {
         match input_event {
             InputEvent::Counter(event) => {
                 counter_event_writer.send(event);
+            }
+            InputEvent::Theme(event) => {
+                theme_event_writer.send(event);
             }
         }
     }

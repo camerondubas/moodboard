@@ -1,5 +1,6 @@
 mod debug;
 pub mod shared;
+pub mod theme;
 
 use bevy::{
     prelude::*,
@@ -8,12 +9,13 @@ use bevy::{
 };
 use debug::DebugPlugin;
 use shared::{CounterEvent, Shared, SharedState};
+use theme::ThemePlugin;
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
     let size = shared_state.lock().unwrap().window_size.clone();
 
     App::new()
-        .insert_resource(ClearColor(Color::hex("0f172a").unwrap()))
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -24,12 +26,13 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
                 }),
                 ..default()
             }),
-            DebugPlugin,
             event_plugin,
+            DebugPlugin,
+            ThemePlugin,
         ))
         .insert_resource(SharedResource(shared_state))
         .add_systems(Startup, (setup, draw_border))
-        .add_systems(Update, (punch_cube))
+        .add_systems(Update, punch_cube)
         .run();
 }
 
@@ -58,8 +61,8 @@ fn setup(
 
     let name = resource.0.lock().unwrap().name.clone();
 
-    commands.spawn((
-        TextBundle::from_section(
+    commands.spawn(
+        (TextBundle::from_section(
             name,
             TextStyle {
                 font_size: 32.0,
@@ -74,9 +77,8 @@ fn setup(
             top: Val::Px(15.0),
             left: Val::Px(25.0),
             ..Default::default()
-        }),
-        SharedText,
-    ));
+        })),
+    );
 }
 
 fn draw_border(
@@ -145,11 +147,4 @@ fn punch_cube(
         let y = (event.value as f32) * 10. + cube_offset;
         cube_transform.translation = Vec3::new(0.0, y, 0.0);
     }
-}
-
-#[derive(Component)]
-struct SharedText;
-
-fn update_text(resource: Res<SharedResource>) {
-    let name = resource.0.lock().unwrap().name.clone();
 }
