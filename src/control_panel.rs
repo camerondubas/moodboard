@@ -1,11 +1,15 @@
 use leptos::*;
 
-use shared::{CounterEvent, InputEvent, TxInputEvent};
+use shared::{CounterEvent, InputEvent, Shared, SharedState, TxInputEvent};
 
 use crate::button::Button;
 
 #[component]
-pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
+pub fn ControlPanel(
+    events: TxInputEvent,
+    shared: ReadSignal<Shared<SharedState>>,
+    set_shared: WriteSignal<Shared<SharedState>>,
+) -> impl IntoView {
     let (count, set_count) = create_signal(0);
 
     create_effect(move |_| {
@@ -27,12 +31,15 @@ pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
                 let html_element = document().query_selector("html").unwrap().unwrap();
                 let class_list = html_element.class_list();
                 if class_list.contains("dark") {
-                    class_list.remove_1("dark");
+                    let _ = class_list.remove_1("dark");
                 } else {
-                    class_list.add_1("dark");
+                    let _ = class_list.add_1("dark");
                 }
             }>
                 "Toggle Theme"
+            </Button>
+            <Button on:click=move |_| {}>
+                "Update Text"
             </Button>
         </div>
     }

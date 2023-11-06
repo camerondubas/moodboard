@@ -1,21 +1,33 @@
-use bevy::prelude::*;
-use bevy_fps_counter::{FpsCounter, FpsCounterPlugin};
+mod debug;
+use bevy::{
+    prelude::*,
+    sprite::MaterialMesh2dBundle,
+    window::{PresentMode, WindowResolution},
+};
+use debug::DebugPlugin;
 use shared::{CounterEvent, Shared, SharedState};
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
+    let size = shared_state.lock().unwrap().window_size.clone();
+
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                canvas: Some("#bevy".to_string()),
+        .insert_resource(ClearColor(Color::hex("0f172a").unwrap()))
+        .add_plugins((
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    canvas: Some("#bevy".to_string()),
+                    resolution: WindowResolution::new(size.0, size.1),
+                    present_mode: PresentMode::Fifo,
+                    ..default()
+                }),
                 ..default()
             }),
-            ..default()
-        }))
-        .add_plugins(event_plugin)
-        .add_plugins(FpsCounterPlugin)
+            DebugPlugin,
+            event_plugin,
+        ))
         .insert_resource(SharedResource(shared_state))
-        .add_systems(Startup, setup)
-        .add_systems(Update, punch_cube)
+        .add_systems(Startup, (setup, draw_border))
+        .add_systems(Update, (punch_cube))
         .run();
 }
 
@@ -28,41 +40,97 @@ pub struct Cube;
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     resource: Res<SharedResource>,
-    mut fps: ResMut<FpsCounter>,
 ) {
-    fps.enable();
-
-    let name = resource.0.lock().unwrap().name.clone();
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(shape::Plane::from_size(5.0).into()),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-        ..default()
-    });
+    commands.spawn(Camera2dBundle::default());
     commands.spawn((
-        PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+        MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(50.).into()).into(),
+            material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
+            transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
             ..default()
         },
         Cube,
     ));
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 1500.0,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
+
+    let name = resource.0.lock().unwrap().name.clone();
+
+    commands.spawn((
+        TextBundle::from_section(
+            name,
+            TextStyle {
+                font_size: 32.0,
+                // font: asset_server.load("fonts/Segoe-UI.ttf"),
+                // color: Color::hex("6b21a8").unwrap(),
+                color: Color::rgb_u8(148, 163, 184),
+                ..Default::default()
+            },
+        )
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(15.0),
+            left: Val::Px(25.0),
+            ..Default::default()
+        }),
+        SharedText,
+    ));
+}
+
+fn draw_border(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    window_query: Query<&Window>,
+) {
+    let window = window_query.single();
+    let (width, height) = (window.width(), window.height());
+
+    let border_width = 10.;
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes
+            .add(shape::Quad::new(Vec2::new(border_width, height)).into())
+            .into(),
+        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
+        transform: Transform::from_translation(Vec3::new(
+            -(width / 2.) + border_width / 2.,
+            0.,
+            0.,
+        )),
         ..default()
     });
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes
+            .add(shape::Quad::new(Vec2::new(border_width, height)).into())
+            .into(),
+        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
+        transform: Transform::from_translation(Vec3::new((width / 2.) - border_width / 2., 0., 0.)),
         ..default()
     });
-    commands.spawn(TextBundle::from_section(name, TextStyle::default()));
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes
+            .add(shape::Quad::new(Vec2::new(width, border_width)).into())
+            .into(),
+        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
+        transform: Transform::from_translation(Vec3::new(
+            0.,
+            -(height / 2.) + border_width / 2.,
+            0.,
+        )),
+        ..default()
+    });
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes
+            .add(shape::Quad::new(Vec2::new(width, border_width)).into())
+            .into(),
+        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
+        transform: Transform::from_translation(Vec3::new(
+            0.,
+            (height / 2.) - border_width / 2.,
+            0.,
+        )),
+        ..default()
+    });
 }
 
 fn punch_cube(
@@ -72,7 +140,14 @@ fn punch_cube(
     let mut cube_transform = cube_query.get_single_mut().expect("no cube :(");
     let cube_offset = 0.5;
     for event in counter_event_reader.iter() {
-        let y = ((event.value as f32) / 10.0) + cube_offset;
+        let y = (event.value as f32) * 10. + cube_offset;
         cube_transform.translation = Vec3::new(0.0, y, 0.0);
     }
+}
+
+#[derive(Component)]
+struct SharedText;
+
+fn update_text(resource: Res<SharedResource>) {
+    let name = resource.0.lock().unwrap().name.clone();
 }

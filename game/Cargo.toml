@@ -7,6 +7,5 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.11.3", default-features = false }
-bevy-fps-counter = "0.2.0"
 console_error_panic_hook = "0.1"
 shared = { path = "../shared" }

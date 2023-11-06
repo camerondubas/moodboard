@@ -2,8 +2,10 @@ use bevy::prelude::*;
 
 use std::sync::{Arc, Mutex};
 
+#[derive(Debug)]
 pub struct SharedState {
     pub name: String,
+    pub window_size: (f32, f32),
 }
 
 pub type Shared<T> = Arc<Mutex<T>>;
