@@ -3,8 +3,9 @@ use bevy::{
         DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
     },
     prelude::*,
-    window::WindowResized,
 };
+
+use crate::shared::ResizeEvent;
 
 pub struct DebugPlugin;
 
@@ -127,10 +128,10 @@ fn mem_counter(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, W
 }
 
 fn on_window_resize(
-    mut resize_events: EventReader<WindowResized>,
+    mut resize_event_reader: EventReader<ResizeEvent>,
     mut query: Query<&mut Text, With<ResolutionText>>,
 ) {
-    for event in resize_events.read() {
+    for event in resize_event_reader.read() {
         for mut text in &mut query {
             text.sections[1].value = format!("{} x {}", event.width, event.height);
         }

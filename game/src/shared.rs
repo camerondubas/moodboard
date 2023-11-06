@@ -16,6 +16,7 @@ pub type Shared<T> = Arc<Mutex<T>>;
 pub enum InputEvent {
     Counter(CounterEvent),
     Theme(ThemeEvent),
+    Resize(ResizeEvent),
 }
 
 #[derive(Clone, Debug, Event)]
@@ -26,6 +27,12 @@ pub struct CounterEvent {
 #[derive(Clone, Debug, Event)]
 pub struct ThemeEvent {
     pub theme: Theme,
+}
+
+#[derive(Clone, Debug, Event)]
+pub struct ResizeEvent {
+    pub width: f32,
+    pub height: f32,
 }
 
 #[derive(Debug)]
@@ -87,6 +94,7 @@ impl Plugin for DuplexEventsPlugin {
             .insert_resource(tx_output_event)
             .init_resource::<Events<CounterEvent>>()
             .init_resource::<Events<ThemeEvent>>()
+            .init_resource::<Events<ResizeEvent>>()
             .add_systems(PreUpdate, input_events_system);
     }
 }
@@ -95,6 +103,7 @@ fn input_events_system(
     rx_input_event: Res<RxInputEvent>,
     mut counter_event_writer: EventWriter<CounterEvent>,
     mut theme_event_writer: EventWriter<ThemeEvent>,
+    mut resize_event_writer: EventWriter<ResizeEvent>,
 ) {
     for input_event in rx_input_event.try_iter() {
         match input_event {
@@ -103,6 +112,9 @@ fn input_events_system(
             }
             InputEvent::Theme(event) => {
                 theme_event_writer.send(event);
+            }
+            InputEvent::Resize(event) => {
+                resize_event_writer.send(event);
             }
         }
     }
