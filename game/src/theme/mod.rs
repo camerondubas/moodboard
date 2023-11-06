@@ -21,7 +21,7 @@ impl Plugin for ThemePlugin {
 }
 
 #[derive(Resource)]
-pub struct ThemeResource(ColorTheme);
+pub struct ThemeResource(pub ColorTheme);
 
 fn on_theme_change(
     mut commands: Commands,

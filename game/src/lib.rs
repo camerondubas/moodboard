@@ -1,12 +1,10 @@
+mod border;
 mod debug;
 pub mod shared;
 pub mod theme;
 
-use bevy::{
-    prelude::*,
-    sprite::MaterialMesh2dBundle,
-    window::{PresentMode, WindowResolution},
-};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
+use border::BorderPlugin;
 use debug::DebugPlugin;
 use shared::{CounterEvent, Shared, SharedState};
 use theme::ThemePlugin;
@@ -21,7 +19,6 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
                 primary_window: Some(Window {
                     canvas: Some("#bevy".to_string()),
                     resolution: WindowResolution::new(size.0, size.1),
-                    present_mode: PresentMode::Fifo,
                     ..default()
                 }),
                 ..default()
@@ -29,9 +26,10 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             event_plugin,
             DebugPlugin,
             ThemePlugin,
+            BorderPlugin,
         ))
         .insert_resource(SharedResource(shared_state))
-        .add_systems(Startup, (setup, draw_border))
+        .add_systems(Startup, setup)
         .add_systems(Update, punch_cube)
         .run();
 }
@@ -79,62 +77,6 @@ fn setup(
             ..Default::default()
         }),
     );
-}
-
-fn draw_border(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    window_query: Query<&Window>,
-) {
-    let window = window_query.single();
-    let (width, height) = (window.width(), window.height());
-
-    let border_width = 10.;
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes
-            .add(shape::Quad::new(Vec2::new(border_width, height)).into())
-            .into(),
-        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
-        transform: Transform::from_translation(Vec3::new(
-            -(width / 2.) + border_width / 2.,
-            0.,
-            0.,
-        )),
-        ..default()
-    });
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes
-            .add(shape::Quad::new(Vec2::new(border_width, height)).into())
-            .into(),
-        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
-        transform: Transform::from_translation(Vec3::new((width / 2.) - border_width / 2., 0., 0.)),
-        ..default()
-    });
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes
-            .add(shape::Quad::new(Vec2::new(width, border_width)).into())
-            .into(),
-        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
-        transform: Transform::from_translation(Vec3::new(
-            0.,
-            -(height / 2.) + border_width / 2.,
-            0.,
-        )),
-        ..default()
-    });
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes
-            .add(shape::Quad::new(Vec2::new(width, border_width)).into())
-            .into(),
-        material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
-        transform: Transform::from_translation(Vec3::new(
-            0.,
-            (height / 2.) - border_width / 2.,
-            0.,
-        )),
-        ..default()
-    });
 }
 
 fn punch_cube(
