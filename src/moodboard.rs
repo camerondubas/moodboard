@@ -17,8 +17,8 @@ pub fn Moodboard(
         game::run(plugin_value.get_value(), shared.get());
     });
 
-    let window = window();
     let closure = Closure::<dyn FnMut(_)>::new(move |_event: web_sys::Event| {
+        let window = window();
         events
             .clone()
             .send(InputEvent::Resize(ResizeEvent {
@@ -28,7 +28,7 @@ pub fn Moodboard(
             .expect("could not send event");
     });
 
-    window
+    window()
         .add_event_listener_with_callback("resize", closure.as_ref().unchecked_ref())
         .expect("could not add event listener");
     closure.forget();
