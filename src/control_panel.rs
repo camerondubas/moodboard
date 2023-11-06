@@ -1,6 +1,6 @@
 use leptos::*;
 
-use shared::{CounterEvent, InputEvent, Shared, SharedState, TxInputEvent};
+use game::shared::{CounterEvent, InputEvent, Shared, SharedState, TxInputEvent};
 
 use crate::button::Button;
 

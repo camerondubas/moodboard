@@ -1,6 +1,6 @@
 use leptos::*;
 
-use shared::{DuplexEventsPlugin, Shared, SharedState};
+use game::shared::{DuplexEventsPlugin, Shared, SharedState};
 
 #[component]
 pub fn Moodboard(

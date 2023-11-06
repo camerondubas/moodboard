@@ -2,7 +2,7 @@ use leptos::*;
 
 use crate::{control_panel::ControlPanel, moodboard::Moodboard};
 
-use shared::{DuplexEventsPlugin, Shared, SharedState, TxInputEvent};
+use game::shared::{DuplexEventsPlugin, Shared, SharedState, TxInputEvent};
 
 #[component]
 pub fn App(

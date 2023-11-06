@@ -7,12 +7,11 @@ edition = "2021"
 
 [dependencies]
 game = { path = "game" }
-shared = { path = "shared" }
 leptos = { version = "0.5.2", features = ["csr", "nightly"] }
 
 [workspace]
-resolver = "2"               # Important! wgpu/Bevy needs this!
-members = ["game", "shared"]
+resolver = "2"     # Important! wgpu/Bevy needs this!
+members = ["game"]
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

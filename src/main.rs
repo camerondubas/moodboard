@@ -5,7 +5,7 @@ mod moodboard;
 
 use app::App;
 use leptos::*;
-use shared::{DuplexEventsPlugin, SharedState};
+use game::shared::{DuplexEventsPlugin, SharedState};
 use std::sync::{Arc, Mutex};
 
 fn main() {

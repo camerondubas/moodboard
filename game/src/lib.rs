@@ -1,4 +1,6 @@
 mod debug;
+pub mod shared;
+
 use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,

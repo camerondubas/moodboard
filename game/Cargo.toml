@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.12.0" }
 console_error_panic_hook = "0.1"
-shared = { path = "../shared" }
+crossbeam-channel = "0.5.8"
