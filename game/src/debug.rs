@@ -130,7 +130,7 @@ fn on_window_resize(
     mut resize_events: EventReader<WindowResized>,
     mut query: Query<&mut Text, With<ResolutionText>>,
 ) {
-    for event in resize_events.iter() {
+    for event in resize_events.read() {
         for mut text in &mut query {
             text.sections[1].value = format!("{} x {}", event.width, event.height);
         }

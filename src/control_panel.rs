@@ -1,18 +1,14 @@
 use leptos::*;
 
 use game::{
-    shared::{CounterEvent, InputEvent, Shared, SharedState, ThemeEvent, TxInputEvent},
+    shared::{CounterEvent, InputEvent, ThemeEvent, TxInputEvent},
     theme::Theme,
 };
 
 use crate::button::Button;
 
 #[component]
-pub fn ControlPanel(
-    events: TxInputEvent,
-    shared: ReadSignal<Shared<SharedState>>,
-    set_shared: WriteSignal<Shared<SharedState>>,
-) -> impl IntoView {
+pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
     let (count, set_count) = create_signal(0);
     let (theme, set_theme) = create_signal(Theme::Dark);
     let evt_clone = events.clone();

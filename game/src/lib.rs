@@ -62,7 +62,7 @@ fn setup(
     let name = resource.0.lock().unwrap().name.clone();
 
     commands.spawn(
-        (TextBundle::from_section(
+        TextBundle::from_section(
             name,
             TextStyle {
                 font_size: 32.0,
@@ -77,7 +77,7 @@ fn setup(
             top: Val::Px(15.0),
             left: Val::Px(25.0),
             ..Default::default()
-        })),
+        }),
     );
 }
 
