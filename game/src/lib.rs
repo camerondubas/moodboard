@@ -139,7 +139,7 @@ fn punch_cube(
 ) {
     let mut cube_transform = cube_query.get_single_mut().expect("no cube :(");
     let cube_offset = 0.5;
-    for event in counter_event_reader.iter() {
+    for event in counter_event_reader.read() {
         let y = (event.value as f32) * 10. + cube_offset;
         cube_transform.translation = Vec3::new(0.0, y, 0.0);
     }
