@@ -1,6 +1,6 @@
-use leptos::{leptos_dom::logging::console_log, *};
+use leptos::*;
 
-use game::shared::{
+use game::events::{
     DuplexEventsPlugin, InputEvent, ResizeEvent, Shared, SharedState, TxInputEvent,
 };
 use web_sys::wasm_bindgen::{prelude::Closure, JsCast};
@@ -34,6 +34,6 @@ pub fn Moodboard(
     closure.forget();
 
     view! {
-        <canvas id="bevy"></canvas>
+        <canvas id="bevy" class="absolute top-0 left-0 -z-10"></canvas>
     }
 }

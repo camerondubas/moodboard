@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 game = { path = "game" }
 leptos = { version = "0.5.2", features = ["csr", "nightly"] }
+leptos_meta = { version = "0.5.2", features = ["csr", "nightly"] }
 
 [workspace]
 resolver = "2"     # Important! wgpu/Bevy needs this!

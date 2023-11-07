@@ -1,16 +1,36 @@
 use leptos::*;
 
 use game::{
-    shared::{CounterEvent, InputEvent, ThemeEvent, TxInputEvent},
+    events::{CounterEvent, InputEvent, ThemeEvent, TxInputEvent},
     theme::Theme,
 };
 
-use crate::button::Button;
+use crate::{
+    button::{Button, IconButton},
+    icons::{IconArrowDown, IconArrowUp, IconMoon, IconStyle},
+};
 
 #[component]
 pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
     let (count, set_count) = create_signal(0);
-    let (theme, set_theme) = create_signal(Theme::Dark);
+    let theme = expect_context::<ReadSignal<Theme>>();
+    let set_theme = expect_context::<WriteSignal<Theme>>();
+
+    let increment = move |_| set_count.update(|x| *x += 1);
+    let decrement = move |_| set_count.update(|x| *x -= 1);
+
+    let toggle_theme = move |_| {
+        set_theme.set(match theme() {
+            Theme::Light => Theme::Dark,
+            Theme::Dark => Theme::Light,
+        })
+    };
+
+    let icon = move || match theme.get() {
+        Theme::Light => IconStyle::Outline,
+        Theme::Dark => IconStyle::Solid,
+    };
+
     let evt_clone = events.clone();
 
     create_effect(move |_| {
@@ -27,30 +47,25 @@ pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
     });
 
     view! {
-        <div class="absolute top-[50px] left-[50px] p-6 mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center space-x-4 text-xl font-medium text-black">
-            <Button on:click=move |_| set_count.update(|x| *x += 1)>
-                "Increment"
-            </Button>
-            <Button on:click=move |_| set_count.update(|x| *x -= 1)>
-                "Decrement"
-            </Button>
-            <span class="text-slate-500 dark:text-slate-400">"Value: " {move || count()}</span>
-            <Button on:click=move |_| {
-                let html_element = document().query_selector("html").unwrap().unwrap();
-                let class_list = html_element.class_list();
-                if class_list.contains("dark") {
-                    set_theme.set(Theme::Light);
-                    let _ = class_list.remove_1("dark");
-                } else {
-                    set_theme.set(Theme::Dark);
-                    let _ = class_list.add_1("dark");
-                }
-            }>
-                "Toggle Theme"
-            </Button>
-            <Button on:click=move |_| {}>
-                "Update Text"
-            </Button>
+        <div class="flex mt-6">
+            <div class="flex-initial p-6 mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center space-x-4 text-xl font-medium text-black">
+                <IconButton on:click=increment>
+                    <IconArrowUp />
+                </IconButton>
+
+                <IconButton on:click=decrement>
+                    <IconArrowDown />
+                </IconButton>
+
+                <Button on:click=move |_| {}>
+                    "Update Text"
+                </Button>
+
+                <IconButton on:click=toggle_theme >
+                    <IconMoon style={Box::new(icon)}/>
+                </IconButton>
+
+            </div>
         </div>
     }
 }

@@ -4,8 +4,9 @@ use bevy::{
     },
     prelude::*,
 };
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
-use crate::shared::ResizeEvent;
+use crate::events::ResizeEvent;
 
 pub struct DebugPlugin;
 
@@ -14,6 +15,7 @@ impl Plugin for DebugPlugin {
         app.add_plugins((
             FrameTimeDiagnosticsPlugin,
             SystemInformationDiagnosticsPlugin,
+            WorldInspectorPlugin::new(),
         ))
         .add_systems(Startup, display_debug)
         .add_systems(
@@ -35,11 +37,15 @@ struct FpsText;
 #[derive(Component)]
 struct ResolutionText;
 
-fn display_debug(mut commands: Commands, window_query: Query<&Window>) {
+fn display_debug(
+    mut commands: Commands,
+    window_query: Query<&Window>,
+    asset_server: Res<AssetServer>,
+) {
     let font_size = 28.0;
     let text_style = TextStyle {
         font_size,
-        // font: asset_server.load("fonts/Segoe-UI.ttf"),
+        // font: asset_server.load("fonts/font.ttf"),
         color: Color::rgb_u8(148, 163, 184),
         ..Default::default()
     };

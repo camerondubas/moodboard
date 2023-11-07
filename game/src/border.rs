@@ -3,7 +3,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use crate::{shared::ResizeEvent, theme::ThemeResource};
+use crate::{events::ResizeEvent, theme::ThemeResource};
 
 pub struct BorderPlugin;
 

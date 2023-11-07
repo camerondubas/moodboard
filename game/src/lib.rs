@@ -1,12 +1,13 @@
 mod border;
 mod debug;
-pub mod shared;
+pub mod events;
 pub mod theme;
 
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
+use bevy_pancam::{PanCam, PanCamPlugin};
 use border::BorderPlugin;
 use debug::DebugPlugin;
-use shared::{CounterEvent, Shared, SharedState};
+use events::{CounterEvent, Shared, SharedState};
 use theme::ThemePlugin;
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
@@ -23,6 +24,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
                 }),
                 ..default()
             }),
+            PanCamPlugin::default(),
             event_plugin,
             DebugPlugin,
             ThemePlugin,
@@ -30,7 +32,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
         ))
         .insert_resource(SharedResource(shared_state))
         .add_systems(Startup, setup)
-        .add_systems(Update, punch_cube)
+        .add_systems(Update, (punch_cube, toggle_key))
         .run();
 }
 
@@ -46,7 +48,14 @@ fn setup(
     mut materials: ResMut<Assets<ColorMaterial>>,
     resource: Res<SharedResource>,
 ) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default()).insert(PanCam {
+        grab_buttons: vec![MouseButton::Middle],
+        // Set max scale in order to prevent the camera from zooming too far out
+        max_scale: Some(10.),
+        // Set min scale in order to prevent the camera from zooming too far in
+        min_scale: 0.5,
+        ..Default::default()
+    });
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(50.).into()).into(),
@@ -88,5 +97,20 @@ fn punch_cube(
     for event in counter_event_reader.read() {
         let y = (event.value as f32) * 10. + cube_offset;
         cube_transform.translation = Vec3::new(0.0, y, 0.0);
+    }
+}
+
+fn toggle_key(mut query: Query<&mut PanCam>, keys: Res<Input<KeyCode>>) {
+    // Space = Toggle Panning
+    if keys.just_pressed(KeyCode::Space) {
+        for mut pancam in &mut query {
+            pancam.enabled = !pancam.enabled;
+        }
+    }
+    // T = Toggle Zoom to Cursor
+    if keys.just_pressed(KeyCode::T) {
+        for mut pancam in &mut query {
+            pancam.zoom_to_cursor = !pancam.zoom_to_cursor;
+        }
     }
 }

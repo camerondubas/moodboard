@@ -1,11 +1,16 @@
 mod app;
 mod button;
 mod control_panel;
+mod icons;
 mod moodboard;
 
 use app::App;
-use game::shared::{DuplexEventsPlugin, SharedState};
+use game::{
+    events::{DuplexEventsPlugin, SharedState},
+    theme::Theme,
+};
 use leptos::*;
+use leptos_meta::Html;
 use std::sync::{Arc, Mutex};
 
 fn main() {
@@ -18,8 +23,20 @@ fn main() {
     }));
     let ((tx_events, _rx_events), duplex_events_plugin) = DuplexEventsPlugin::create();
 
+    let theme_signal = create_signal(Theme::Dark);
+    let (theme, set_theme) = theme_signal;
+
+    let theme_class = move || match theme.get() {
+        Theme::Dark => "dark",
+        Theme::Light => "",
+    };
+
+    provide_context(theme);
+    provide_context(set_theme);
+
     leptos::mount_to_body(move || {
         view! {
+            <Html class=theme_class  />
             <App
                 events={tx_events.clone()}
                 plugin={duplex_events_plugin.clone()}

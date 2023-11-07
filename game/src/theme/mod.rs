@@ -1,7 +1,7 @@
 pub mod colors;
 use bevy::prelude::*;
 
-use crate::shared::ThemeEvent;
+use crate::events::ThemeEvent;
 
 use self::colors::ColorTheme;
 
