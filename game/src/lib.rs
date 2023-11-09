@@ -4,7 +4,13 @@ pub mod events;
 pub mod theme;
 mod ui;
 
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
+use bevy::{
+    prelude::*,
+    reflect::TypeUuid,
+    render::render_resource::{AsBindGroup, ShaderRef},
+    sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
+    window::WindowResolution,
+};
 use bevy_pancam::{PanCam, PanCamPlugin};
 use canvas::CanvasPlugin;
 use debug::DebugPlugin;
@@ -28,6 +34,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             }),
             CanvasPlugin,
             PanCamPlugin::default(),
+            Material2dPlugin::<CustomMaterial>::default(),
             event_plugin,
             DebugPlugin,
             ThemePlugin,
@@ -39,6 +46,14 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
         .run();
 }
 
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct CustomMaterial {}
+
+impl Material2d for CustomMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/animate_shader.wgsl".into()
+    }
+}
 #[derive(Resource)]
 pub struct SharedResource(Shared<SharedState>);
 
@@ -48,7 +63,8 @@ pub struct Cube;
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    // mut materials: ResMut<Assets<ColorMaterial>>,
+    mut materials: ResMut<Assets<CustomMaterial>>,
     resource: Res<SharedResource>,
 ) {
     commands.spawn(Camera2dBundle::default()).insert(PanCam {
@@ -62,7 +78,8 @@ fn setup(
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-            material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
+            material: materials.add(CustomMaterial {}),
+            // material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
             transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
             ..default()
         },
