@@ -1,14 +1,16 @@
-mod border;
+mod canvas;
 mod debug;
 pub mod events;
 pub mod theme;
+mod ui;
 
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
 use bevy_pancam::{PanCam, PanCamPlugin};
-use border::BorderPlugin;
+use canvas::CanvasPlugin;
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
 use theme::ThemePlugin;
+use ui::UiPlugin;
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
     let size = shared_state.lock().unwrap().window_size.clone();
@@ -24,11 +26,12 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
                 }),
                 ..default()
             }),
+            CanvasPlugin,
             PanCamPlugin::default(),
             event_plugin,
             DebugPlugin,
             ThemePlugin,
-            BorderPlugin,
+            UiPlugin,
         ))
         .insert_resource(SharedResource(shared_state))
         .add_systems(Startup, setup)
