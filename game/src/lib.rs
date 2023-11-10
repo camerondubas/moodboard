@@ -1,24 +1,24 @@
 mod canvas;
 mod debug;
+mod drag;
 pub mod events;
 mod post_it;
 pub mod theme;
 mod ui;
 
 use bevy::{
-    pbr::Shadow,
     prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
-    sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
-    text::{BreakLineOn, Text2dBounds},
-    window::WindowResolution,
+    sprite::{Material2d, MaterialMesh2dBundle},
+    window::{PrimaryWindow, WindowResolution},
 };
 use bevy_pancam::{PanCam, PanCamPlugin};
 use canvas::CanvasPlugin;
 use debug::DebugPlugin;
+use drag::DragAndDropPlugin;
 use events::{CounterEvent, Shared, SharedState};
 use post_it::PostItPlugin;
-use theme::{Theme, ThemePlugin, ThemeResource};
+use theme::ThemePlugin;
 use ui::UiPlugin;
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
@@ -43,11 +43,42 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             ThemePlugin,
             UiPlugin,
             PostItPlugin,
+            DragAndDropPlugin,
         ))
         .insert_resource(SharedResource(shared_state))
+        .init_resource::<CursorWorldCoords>()
         .add_systems(Startup, setup)
-        .add_systems(Update, (punch_cube, toggle_key))
+        .add_systems(Update, (punch_cube, toggle_key, my_cursor_system))
         .run();
+}
+
+#[derive(Resource, Default)]
+struct CursorWorldCoords(Vec2);
+
+fn my_cursor_system(
+    mut cursor_coords: ResMut<CursorWorldCoords>,
+    // query to get the window (so we can read the current cursor position)
+    q_window: Query<&Window, With<PrimaryWindow>>,
+    // query to get camera transform
+    q_camera: Query<(&Camera, &GlobalTransform), With<PanCam>>,
+) {
+    // get the camera info and transform
+    // assuming there is exactly one main camera entity, so Query::single() is OK
+    let (camera, camera_transform) = q_camera.single();
+
+    // There is only one primary window, so we can similarly get it from the query:
+    let window = q_window.single();
+
+    // check if the cursor is inside the window and get its position
+    // then, ask bevy to convert into world coordinates, and truncate to discard Z
+    if let Some(world_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .map(|ray| ray.origin.truncate())
+    {
+        cursor_coords.0 = world_position;
+        debug!("World coords: {}/{}", world_position.x, world_position.y);
+    }
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]

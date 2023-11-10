@@ -3,7 +3,10 @@ use bevy::{
     text::{BreakLineOn, Text2dBounds},
 };
 
-use crate::theme::{colors::ColorTheme, ThemeResource};
+use crate::{
+    drag::Draggable,
+    theme::{colors::ColorTheme, ThemeResource},
+};
 
 pub struct PostItPlugin;
 
@@ -89,6 +92,7 @@ fn draw_post_it(
                 transform: Transform::from_translation(position),
                 ..Default::default()
             },
+            Draggable,
             Name::new("Post-it Note"),
         ))
         .with_children(|builder| {
