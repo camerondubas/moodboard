@@ -19,7 +19,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0.clone(),
-        Vec3::new(-450., 150., 0.),
+        Vec3::new(-900., 300., 0.),
         theme.0.amber.get_200(),
         text,
     );
@@ -27,7 +27,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(-150., 150., 0.),
+        Vec3::new(-300., 300., 0.),
         theme.0.green.get_300(),
         text,
     );
@@ -35,7 +35,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(150., 150., 0.),
+        Vec3::new(300., 300., 0.),
         theme.0.purple.get_300(),
         text,
     );
@@ -43,7 +43,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(-450., -150., 0.),
+        Vec3::new(-900., -300., 0.),
         theme.0.blue.get_300(),
         text,
     );
@@ -51,7 +51,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(-150., -150., 0.),
+        Vec3::new(-300., -300., 0.),
         theme.0.pink.get_300(),
         text,
     );
@@ -59,7 +59,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(150., -150., 0.),
+        Vec3::new(300., -300., 0.),
         theme.0.slate.get_400(),
         text,
     );
@@ -72,9 +72,9 @@ fn draw_post_it(
     color: Color,
     text: &str,
 ) {
-    let size = Vec2::new(200., 210.);
+    let size = Vec2::new(400., 420.);
     let text_style = TextStyle {
-        font_size: 18.0,
+        font_size: 32.0,
         color: theme.gray.get_700().with_a(0.8),
         ..Default::default()
     };
