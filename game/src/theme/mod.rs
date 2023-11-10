@@ -31,7 +31,7 @@ fn on_theme_change(
     for event in theme_event_reader.read() {
         let bg_color = match event.theme {
             Theme::Dark => theme.0.slate.get_900(),
-            Theme::Light => theme.0.slate.get_200(),
+            Theme::Light => theme.0.slate.get_100(),
         };
 
         commands.insert_resource(ClearColor(bg_color));

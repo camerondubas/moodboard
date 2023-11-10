@@ -23,7 +23,7 @@ fn main() {
     }));
     let ((tx_events, _rx_events), duplex_events_plugin) = DuplexEventsPlugin::create();
 
-    let theme_signal = create_signal(Theme::Dark);
+    let theme_signal = create_signal(Theme::Light);
     let (theme, set_theme) = theme_signal;
 
     let theme_class = move || match theme.get() {
