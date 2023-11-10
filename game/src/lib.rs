@@ -1,21 +1,24 @@
 mod canvas;
 mod debug;
 pub mod events;
+mod post_it;
 pub mod theme;
 mod ui;
 
 use bevy::{
+    pbr::Shadow,
     prelude::*,
-    reflect::TypeUuid,
     render::render_resource::{AsBindGroup, ShaderRef},
     sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
+    text::{BreakLineOn, Text2dBounds},
     window::WindowResolution,
 };
 use bevy_pancam::{PanCam, PanCamPlugin};
 use canvas::CanvasPlugin;
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
-use theme::ThemePlugin;
+use post_it::PostItPlugin;
+use theme::{Theme, ThemePlugin, ThemeResource};
 use ui::UiPlugin;
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
@@ -34,11 +37,12 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             }),
             CanvasPlugin,
             PanCamPlugin::default(),
-            Material2dPlugin::<CustomMaterial>::default(),
+            // Material2dPlugin::<CustomMaterial>::default(),
             event_plugin,
             DebugPlugin,
             ThemePlugin,
             UiPlugin,
+            PostItPlugin,
         ))
         .insert_resource(SharedResource(shared_state))
         .add_systems(Startup, setup)
@@ -60,26 +64,33 @@ pub struct SharedResource(Shared<SharedState>);
 #[derive(Component, Copy, Clone)]
 pub struct Cube;
 
+#[derive(Component, Copy, Clone)]
+pub struct PostItNote;
+
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    // mut materials: ResMut<Assets<ColorMaterial>>,
-    mut materials: ResMut<Assets<CustomMaterial>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    // mut materials: ResMut<Assets<CustomMaterial>>,
     resource: Res<SharedResource>,
 ) {
-    commands.spawn(Camera2dBundle::default()).insert(PanCam {
+    let mut camera = Camera2dBundle::default();
+    // Set initial scale to allow for zooming in
+    camera.projection.scale = 2.0;
+
+    commands.spawn(camera).insert(PanCam {
         grab_buttons: vec![MouseButton::Middle],
         // Set max scale in order to prevent the camera from zooming too far out
         max_scale: Some(10.),
         // Set min scale in order to prevent the camera from zooming too far in
-        min_scale: 0.5,
+        min_scale: 1.0,
         ..Default::default()
     });
     commands.spawn((
         MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-            material: materials.add(CustomMaterial {}),
-            // material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
+            mesh: meshes.add(shape::Circle::new(20.).into()).into(),
+            // material: materials.add(CustomMaterial {}),
+            material: materials.add(ColorMaterial::from(Color::hex("6b21a8").unwrap())),
             transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
             ..default()
         },
