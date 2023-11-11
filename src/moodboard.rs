@@ -34,6 +34,6 @@ pub fn Moodboard(
     closure.forget();
 
     view! {
-        <canvas id="bevy" class="absolute top-0 left-0 -z-10"></canvas>
+        <canvas id="bevy" class="pointer-events-auto absolute top-0 left-0 -z-10"></canvas>
     }
 }

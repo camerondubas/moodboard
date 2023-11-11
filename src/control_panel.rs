@@ -48,7 +48,7 @@ pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
 
     view! {
         <div class="flex mt-6">
-            <div class="flex-initial p-6 mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center space-x-4 text-xl font-medium text-black">
+            <div class="pointer-events-auto flex-initial p-6 mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center space-x-4 text-xl font-medium text-black">
                 <IconButton on:click=increment>
                     <IconArrowUp />
                 </IconButton>

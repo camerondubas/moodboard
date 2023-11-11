@@ -1,4 +1,5 @@
 use leptos::*;
+use leptos_meta::Html;
 
 use crate::{control_panel::ControlPanel, moodboard::Moodboard};
 
@@ -14,6 +15,8 @@ pub fn App(
     let name = shared.get().lock().unwrap().name.clone();
 
     view! {
+        <Html class="pointer-events-none" />
+
         <div class="static">
             <div class="absolute bottom-0 right-0 bg-white dark:bg-slate-800 rounded-xl shadow-lg m-4">
                 <p class="p-4 text-slate-500 dark:text-slate-400">"Hello, world! Message: "{name.clone()}</p>
