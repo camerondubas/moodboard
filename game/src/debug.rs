@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
-use crate::events::ResizeEvent;
+use crate::{events::ResizeEvent, CursorWorldCoords};
 
 pub struct DebugPlugin;
 
@@ -20,13 +20,13 @@ impl Plugin for DebugPlugin {
         .add_systems(Startup, display_debug)
         .add_systems(
             Update,
-            (fps_counter, on_window_resize, cpu_counter, mem_counter),
+            (fps_counter, on_window_resize, cursor_position, mem_counter),
         );
     }
 }
 
 #[derive(Component)]
-struct CpuText;
+struct CursorText;
 
 #[derive(Component)]
 struct MemText;
@@ -77,10 +77,10 @@ fn display_debug(
 
             parent.spawn((
                 TextBundle::from_sections([
-                    TextSection::new("CPU: ", text_style.clone()),
-                    TextSection::new("0", text_style.clone()),
+                    TextSection::new("Cursor: ", text_style.clone()),
+                    TextSection::new("0, 0", text_style.clone()),
                 ]),
-                CpuText,
+                CursorText,
             ));
             parent.spawn((
                 TextBundle::from_sections([
@@ -111,14 +111,14 @@ fn fps_counter(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, W
     }
 }
 
-fn cpu_counter(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, With<CpuText>>) {
+fn cursor_position(
+    cursor_coords: Res<CursorWorldCoords>,
+    mut query: Query<&mut Text, With<CursorText>>,
+) {
     for mut text in &mut query {
-        if let Some(cpu) = diagnostics.get(SystemInformationDiagnosticsPlugin::CPU_USAGE) {
-            if let Some(value) = cpu.smoothed() {
-                // Update the value of the second section
-                text.sections[1].value = format!("{value:.2}");
-            }
-        }
+        // Update the value of the second section
+        text.sections[1].value =
+            format!("{}, {}", cursor_coords.0.x as i32, cursor_coords.0.y as i32);
     }
 }
 
