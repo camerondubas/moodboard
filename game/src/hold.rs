@@ -27,6 +27,7 @@ fn hold_while_clicked(
     held_query: Query<Entity, With<Held>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
+        let mut possible = vec![];
         // If this gets more complex, look into this package:
         // https://github.com/aevyrie/bevy_mod_picking/issues/7
         for (entity, transform, sprite) in holdable_query.iter() {
@@ -45,10 +46,15 @@ fn hold_while_clicked(
             let y_range = sprite_y_position - half_height..sprite_y_position + half_height;
 
             if x_range.contains(&coords.x) && y_range.contains(&coords.y) {
-                commands.entity(entity).insert(Held {
-                    offset: Vec2::new(coords.x - sprite_x_position, coords.y - sprite_y_position),
-                });
+                let offset = Vec2::new(coords.x - sprite_x_position, coords.y - sprite_y_position);
+                possible.push((entity, offset, translation.z));
             }
+        }
+
+        if possible.len() > 0 {
+            possible.sort_by(|(_, _, a_z), (_, _, b_z)| b_z.partial_cmp(a_z).unwrap());
+            let (entity, offset, _) = possible[0];
+            commands.entity(entity).insert(Held { offset });
         }
     }
 
