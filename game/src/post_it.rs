@@ -4,6 +4,7 @@ use bevy::{
 };
 
 use crate::{
+    events::AddPostItEvent,
     hold::Holdable,
     item::Item,
     theme::{colors::ColorTheme, ThemeResource},
@@ -13,7 +14,8 @@ pub struct PostItPlugin;
 
 impl Plugin for PostItPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, draw_initial_post_its);
+        app.add_systems(Startup, draw_initial_post_its)
+            .add_systems(Update, add_post_it);
     }
 }
 
@@ -67,6 +69,22 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
         theme.0.slate.get_400(),
         text,
     );
+}
+
+fn add_post_it(
+    mut commands: Commands,
+    mut events: EventReader<AddPostItEvent>,
+    theme: Res<ThemeResource>,
+) {
+    for event in events.iter() {
+        draw_post_it(
+            &mut commands,
+            &theme.0,
+            Vec3::new(0., 0., 0.0),
+            theme.0.amber.get_200(),
+            event.0.as_str(),
+        );
+    }
 }
 
 fn draw_post_it(

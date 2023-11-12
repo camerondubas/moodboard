@@ -17,6 +17,7 @@ pub enum InputEvent {
     Counter(CounterEvent),
     Theme(ThemeEvent),
     Resize(ResizeEvent),
+    AddPostIt(AddPostItEvent),
 }
 
 #[derive(Clone, Debug, Event)]
@@ -34,6 +35,9 @@ pub struct ResizeEvent {
     pub width: f32,
     pub height: f32,
 }
+
+#[derive(Clone, Debug, Event)]
+pub struct AddPostItEvent(pub String);
 
 #[derive(Debug)]
 pub enum OutputEvent {
@@ -95,6 +99,7 @@ impl Plugin for DuplexEventsPlugin {
             .init_resource::<Events<CounterEvent>>()
             .init_resource::<Events<ThemeEvent>>()
             .init_resource::<Events<ResizeEvent>>()
+            .init_resource::<Events<AddPostItEvent>>()
             .add_systems(PreUpdate, input_events_system);
     }
 }
@@ -104,6 +109,7 @@ fn input_events_system(
     mut counter_event_writer: EventWriter<CounterEvent>,
     mut theme_event_writer: EventWriter<ThemeEvent>,
     mut resize_event_writer: EventWriter<ResizeEvent>,
+    mut add_post_it_event_writer: EventWriter<AddPostItEvent>,
 ) {
     for input_event in rx_input_event.try_iter() {
         match input_event {
@@ -115,6 +121,9 @@ fn input_events_system(
             }
             InputEvent::Resize(event) => {
                 resize_event_writer.send(event);
+            }
+            InputEvent::AddPostIt(event) => {
+                add_post_it_event_writer.send(event);
             }
         }
     }
