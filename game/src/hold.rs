@@ -15,6 +15,7 @@ pub struct Holdable;
 
 #[derive(Component)]
 pub struct Held {
+    /// The offset between the cursor and the center of the sprite when it was clicked.
     pub offset: Vec2,
 }
 
