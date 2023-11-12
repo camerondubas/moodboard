@@ -105,6 +105,19 @@ fn draw_post_it(commands: &mut Commands, position: Vec3, color: Color, text: &st
             Name::new("Post-it Note"),
         ))
         .with_children(|builder| {
+            builder.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Palette::GRAY_600.with_a(0.6),
+                        custom_size: Some(size),
+                        ..Default::default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(10., -10., -0.1)),
+                    ..Default::default()
+                },
+                Name::new("Post-it Note Shadow"),
+            ));
+
             let z = Vec3::new(0., 0., 0.1);
             builder.spawn(Text2dBundle {
                 text: Text {
