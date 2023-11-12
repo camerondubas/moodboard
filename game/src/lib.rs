@@ -1,7 +1,7 @@
 mod canvas;
 mod debug;
-mod drag;
 pub mod events;
+mod hold;
 mod post_it;
 pub mod theme;
 mod ui;
@@ -15,8 +15,8 @@ use bevy::{
 use bevy_pancam::{PanCam, PanCamPlugin};
 use canvas::CanvasPlugin;
 use debug::DebugPlugin;
-use drag::DragAndDropPlugin;
 use events::{CounterEvent, Shared, SharedState};
+use hold::DragAndDropPlugin;
 use post_it::PostItPlugin;
 use theme::ThemePlugin;
 use ui::UiPlugin;

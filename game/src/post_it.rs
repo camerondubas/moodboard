@@ -4,7 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    drag::Draggable,
+    hold::Holdable,
     theme::{colors::ColorTheme, ThemeResource},
 };
 
@@ -92,7 +92,7 @@ fn draw_post_it(
                 transform: Transform::from_translation(position),
                 ..Default::default()
             },
-            Draggable,
+            Holdable,
             Name::new("Post-it Note"),
         ))
         .with_children(|builder| {
