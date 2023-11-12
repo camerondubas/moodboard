@@ -98,6 +98,7 @@ fn draw_post_it(
             Name::new("Post-it Note"),
         ))
         .with_children(|builder| {
+            let z = Vec3::new(0., 0., 0.1);
             builder.spawn(Text2dBundle {
                 text: Text {
                     sections: vec![TextSection::new(text, text_style.clone())],
@@ -110,7 +111,7 @@ fn draw_post_it(
                 },
 
                 // ensure the text is drawn on top of the box
-                transform: Transform::from_translation(Vec3::Z),
+                transform: Transform::from_translation(z),
                 ..default()
             });
         });
