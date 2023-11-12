@@ -5,6 +5,7 @@ use bevy::{
 
 use crate::{
     hold::Holdable,
+    item::Item,
     theme::{colors::ColorTheme, ThemeResource},
 };
 
@@ -21,8 +22,8 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
 
     draw_post_it(
         &mut commands,
-        &theme.0.clone(),
-        Vec3::new(-900., 300., 0.),
+        &theme.0,
+        Vec3::new(-900., 300., 0.0),
         theme.0.amber.get_200(),
         text,
     );
@@ -30,7 +31,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(-300., 300., 0.),
+        Vec3::new(-300., 300., 0.0),
         theme.0.green.get_300(),
         text,
     );
@@ -38,7 +39,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(300., 300., 0.),
+        Vec3::new(300., 300., 0.0),
         theme.0.purple.get_300(),
         text,
     );
@@ -46,7 +47,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(-900., -300., 0.),
+        Vec3::new(-900., -300., 0.0),
         theme.0.blue.get_300(),
         text,
     );
@@ -54,7 +55,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(-300., -300., 0.),
+        Vec3::new(-300., -300., 0.0),
         theme.0.pink.get_300(),
         text,
     );
@@ -62,7 +63,7 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
     draw_post_it(
         &mut commands,
         &theme.0,
-        Vec3::new(300., -300., 0.),
+        Vec3::new(300., -300., 0.0),
         theme.0.slate.get_400(),
         text,
     );
@@ -93,6 +94,7 @@ fn draw_post_it(
                 ..Default::default()
             },
             Holdable,
+            Item,
             Name::new("Post-it Note"),
         ))
         .with_children(|builder| {

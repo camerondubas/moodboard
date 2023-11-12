@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
-use crate::{events::ResizeEvent, CursorWorldCoords};
+use crate::{events::ResizeEvent, item::ItemCounterResource, CursorWorldCoords};
 
 pub struct DebugPlugin;
 
@@ -20,7 +20,7 @@ impl Plugin for DebugPlugin {
         .add_systems(Startup, display_debug)
         .add_systems(
             Update,
-            (fps_counter, on_window_resize, cursor_position, mem_counter),
+            (fps_counter, on_window_resize, cursor_position, item_counter),
         );
     }
 }
@@ -29,7 +29,7 @@ impl Plugin for DebugPlugin {
 struct CursorText;
 
 #[derive(Component)]
-struct MemText;
+struct ItemCounterText;
 
 #[derive(Component)]
 struct FpsText;
@@ -40,7 +40,7 @@ struct ResolutionText;
 fn display_debug(
     mut commands: Commands,
     window_query: Query<&Window>,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
 ) {
     let font_size = 28.0;
     let text_style = TextStyle {
@@ -84,10 +84,10 @@ fn display_debug(
             ));
             parent.spawn((
                 TextBundle::from_sections([
-                    TextSection::new("MEM: ", text_style.clone()),
+                    TextSection::new("Item Counter: ", text_style.clone()),
                     TextSection::new("0", text_style.clone()),
                 ]),
-                MemText,
+                ItemCounterText,
             ));
 
             parent.spawn((
@@ -122,14 +122,13 @@ fn cursor_position(
     }
 }
 
-fn mem_counter(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, With<MemText>>) {
+fn item_counter(
+    item_counter: Res<ItemCounterResource>,
+    mut query: Query<&mut Text, With<ItemCounterText>>,
+) {
     for mut text in &mut query {
-        if let Some(mem) = diagnostics.get(SystemInformationDiagnosticsPlugin::MEM_USAGE) {
-            if let Some(value) = mem.smoothed() {
-                // Update the value of the second section
-                text.sections[1].value = format!("{value:.2}");
-            }
-        }
+        // Update the value of the second section
+        text.sections[1].value = format!("{:.0}", item_counter.0.get_count());
     }
 }
 

@@ -2,6 +2,7 @@ mod canvas;
 mod debug;
 pub mod events;
 mod hold;
+mod item;
 mod post_it;
 pub mod theme;
 mod ui;
@@ -17,6 +18,7 @@ use canvas::CanvasPlugin;
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
 use hold::DragAndDropPlugin;
+use item::ItemPlugin;
 use post_it::PostItPlugin;
 use theme::ThemePlugin;
 use ui::UiPlugin;
@@ -44,6 +46,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             UiPlugin,
             PostItPlugin,
             DragAndDropPlugin,
+            ItemPlugin,
         ))
         .insert_resource(SharedResource(shared_state))
         .init_resource::<CursorWorldCoords>()

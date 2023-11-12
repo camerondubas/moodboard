@@ -4,6 +4,7 @@ use leptos::*;
 pub enum IconStyle {
     Outline,
     Solid,
+    #[allow(dead_code)]
     Mini,
 }
 
