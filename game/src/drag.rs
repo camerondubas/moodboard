@@ -1,4 +1,7 @@
+use std::ops::{Add, Sub};
+
 use bevy::{prelude::*, transform::commands};
+use bevy_inspector_egui::egui::epaint::text::cursor;
 
 use crate::CursorWorldCoords;
 
@@ -14,7 +17,9 @@ impl Plugin for DragAndDropPlugin {
 pub struct Draggable;
 
 #[derive(Component)]
-pub struct Dragging;
+pub struct Dragging {
+    pub offset: Vec2,
+}
 
 fn drag_and_drop(
     mut commands: Commands,
@@ -45,7 +50,12 @@ fn drag_and_drop(
                 && cursor_coords.0.y > bottom
                 && cursor_coords.0.y < top
             {
-                commands.entity(entity).insert(Dragging);
+                commands.entity(entity).insert(Dragging {
+                    offset: Vec2::new(
+                        cursor_coords.0.x - transform.translation().x,
+                        cursor_coords.0.y - transform.translation().y,
+                    ),
+                });
             }
         }
     }
@@ -61,28 +71,21 @@ fn dragging(
     mut commands: Commands,
     cursor_coords: Res<CursorWorldCoords>,
     mouse_button_input: Res<Input<MouseButton>>,
-    dragging_query: Query<(Entity, &GlobalTransform, &Sprite), With<Dragging>>,
+    dragging_query: Query<(Entity, &Dragging)>,
 ) {
     if mouse_button_input.pressed(MouseButton::Left) {
-        for (entity, transform, sprite) in dragging_query.iter() {
-            // the offset is the difference between the cursor and the center of the sprite
-            // let width = sprite.custom_size.unwrap().x;
-            // let height = sprite.custom_size.unwrap().y;
+        for (entity, dragging) in dragging_query.iter() {
+            let cursor = cursor_coords.0;
 
-            // let offset_x = cursor_coords.0.x - transform.translation().x - width / 2.;
-            // let offset_y = cursor_coords.0.y - transform.translation().y - height / 2.;
-
-            // let offset_x = cursor_coords.0.x - width / 2.;
-            // let offset_y = cursor_coords.0.y - height / 2.;
-
-            let offset_x = cursor_coords.0.x;
-            let offset_y = cursor_coords.0.y;
+            let new_pos = Vec3::new(
+                cursor.x - dragging.offset.x,
+                cursor.y - dragging.offset.y,
+                0.0,
+            );
 
             commands
                 .entity(entity)
-                .insert(Transform::from_translation(Vec3::new(
-                    offset_x, offset_y, 0.,
-                )));
+                .insert(Transform::from_translation(new_pos));
         }
     }
 }
