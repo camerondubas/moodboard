@@ -2,8 +2,18 @@ use bevy::{
     prelude::*,
     text::{BreakLineOn, Text2dBounds},
 };
+use rand::seq::SliceRandom;
 
 use crate::{events::AddPostItEvent, hold::Holdable, item::Item, theme::colors::Palette};
+
+const POST_IT_COLORS: [Color; 6] = [
+    Palette::AMBER_200,
+    Palette::GREEN_300,
+    Palette::PURPLE_300,
+    Palette::BLUE_300,
+    Palette::PINK_300,
+    Palette::SLATE_400,
+];
 
 pub struct PostItPlugin;
 
@@ -62,10 +72,11 @@ fn draw_initial_post_its(mut commands: Commands) {
 
 fn add_post_it(mut commands: Commands, mut events: EventReader<AddPostItEvent>) {
     for event in events.iter() {
+        let color = POST_IT_COLORS.choose(&mut rand::thread_rng()).unwrap();
         draw_post_it(
             &mut commands,
             Vec3::new(0., 0., 0.0),
-            Palette::AMBER_200,
+            *color,
             event.0.as_str(),
         );
     }

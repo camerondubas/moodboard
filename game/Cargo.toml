@@ -11,3 +11,4 @@ bevy-inspector-egui = "0.21.0"
 bevy_pancam = { version = "0.10.0", features = ["bevy_egui"] }
 console_error_panic_hook = "0.1"
 crossbeam-channel = "0.5.8"
+rand = "0.8.5"
