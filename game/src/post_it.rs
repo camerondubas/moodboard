@@ -3,12 +3,7 @@ use bevy::{
     text::{BreakLineOn, Text2dBounds},
 };
 
-use crate::{
-    events::AddPostItEvent,
-    hold::Holdable,
-    item::Item,
-    theme::{colors::ColorTheme, ThemeResource},
-};
+use crate::{events::AddPostItEvent, hold::Holdable, item::Item, theme::colors::Palette};
 
 pub struct PostItPlugin;
 
@@ -19,85 +14,68 @@ impl Plugin for PostItPlugin {
     }
 }
 
-fn draw_initial_post_its(mut commands: Commands, theme: Res<ThemeResource>) {
+fn draw_initial_post_its(mut commands: Commands) {
     let text = "This is some default Text";
 
     draw_post_it(
         &mut commands,
-        &theme.0,
         Vec3::new(-900., 300., 0.0),
-        theme.0.amber.get_200(),
+        Palette::AMBER_200,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        &theme.0,
         Vec3::new(-300., 300., 0.0),
-        theme.0.green.get_300(),
+        Palette::GREEN_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        &theme.0,
         Vec3::new(300., 300., 0.0),
-        theme.0.purple.get_300(),
+        Palette::PURPLE_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        &theme.0,
         Vec3::new(-900., -300., 0.0),
-        theme.0.blue.get_300(),
+        Palette::BLUE_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        &theme.0,
         Vec3::new(-300., -300., 0.0),
-        theme.0.pink.get_300(),
+        Palette::PINK_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        &theme.0,
         Vec3::new(300., -300., 0.0),
-        theme.0.slate.get_400(),
+        Palette::SLATE_400,
         text,
     );
 }
 
-fn add_post_it(
-    mut commands: Commands,
-    mut events: EventReader<AddPostItEvent>,
-    theme: Res<ThemeResource>,
-) {
+fn add_post_it(mut commands: Commands, mut events: EventReader<AddPostItEvent>) {
     for event in events.iter() {
         draw_post_it(
             &mut commands,
-            &theme.0,
             Vec3::new(0., 0., 0.0),
-            theme.0.amber.get_200(),
+            Palette::AMBER_200,
             event.0.as_str(),
         );
     }
 }
 
-fn draw_post_it(
-    commands: &mut Commands,
-    theme: &ColorTheme,
-    position: Vec3,
-    color: Color,
-    text: &str,
-) {
+fn draw_post_it(commands: &mut Commands, position: Vec3, color: Color, text: &str) {
     let size = Vec2::new(400., 420.);
     let text_style = TextStyle {
         font_size: 32.0,
-        color: theme.gray.get_700().with_a(0.8),
+        color: Palette::GRAY_700.with_a(0.8),
         ..Default::default()
     };
     commands

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::theme::ThemeResource;
+use crate::theme::colors::Palette;
 
 pub struct UiPlugin;
 
@@ -10,9 +10,9 @@ impl Plugin for UiPlugin {
     }
 }
 
-fn ui_border(mut commands: Commands, theme: Res<ThemeResource>) {
+fn ui_border(mut commands: Commands) {
     let border_width = 5.;
-    let border_color = theme.0.slate.get_400();
+    let border_color = Palette::SLATE_400;
 
     commands.spawn((
         NodeBundle {
