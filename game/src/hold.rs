@@ -2,6 +2,9 @@ use bevy::prelude::*;
 
 use crate::CursorWorldCoords;
 
+const HELD_Z: f32 = 999.0;
+const BASE_Z: f32 = 0.0;
+
 pub struct DragAndDropPlugin;
 
 impl Plugin for DragAndDropPlugin {
@@ -24,7 +27,7 @@ fn hold_while_clicked(
     mouse_button_input: Res<Input<MouseButton>>,
     cursor_coords: Res<CursorWorldCoords>,
     holdable_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Holdable>, Without<Held>)>,
-    held_query: Query<Entity, With<Held>>,
+    mut held_query: Query<(Entity, &Transform), With<Held>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         // If this gets more complex, look into this package:
@@ -53,8 +56,13 @@ fn hold_while_clicked(
     }
 
     if mouse_button_input.just_released(MouseButton::Left) {
-        for entity in held_query.iter() {
+        for (entity, transform) in held_query.iter() {
             commands.entity(entity).remove::<Held>();
+            let mut translation = transform.translation;
+            translation.z = BASE_Z;
+            commands
+                .entity(entity)
+                .insert(Transform::from_translation(translation));
         }
     }
 }
@@ -69,7 +77,7 @@ fn move_held_entities(
         for (entity, held) in held_query.iter() {
             let cursor = cursor_coords.0;
             let updated_position =
-                Vec3::new(cursor.x - held.offset.x, cursor.y - held.offset.y, 0.0);
+                Vec3::new(cursor.x - held.offset.x, cursor.y - held.offset.y, HELD_Z);
 
             commands
                 .entity(entity)
