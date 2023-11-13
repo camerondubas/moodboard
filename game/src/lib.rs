@@ -4,6 +4,7 @@ pub mod events;
 mod hold;
 mod item;
 mod post_it;
+mod select;
 pub mod theme;
 mod ui;
 
@@ -20,6 +21,7 @@ use events::{CounterEvent, Shared, SharedState};
 use hold::DragAndDropPlugin;
 use item::ItemPlugin;
 use post_it::PostItPlugin;
+use select::SelectPlugin;
 use theme::ThemePlugin;
 use ui::UiPlugin;
 
@@ -47,6 +49,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             PostItPlugin,
             DragAndDropPlugin,
             ItemPlugin,
+            SelectPlugin,
         ))
         .insert_resource(SharedResource(shared_state))
         .init_resource::<CursorWorldCoords>()
@@ -120,6 +123,26 @@ fn setup(
         min_scale: 1.0,
         ..Default::default()
     });
+
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes
+            .add(shape::Quad::new(Vec2::new(50., 100.)).into())
+            .into(),
+        material: materials.add(ColorMaterial::from(Color::LIME_GREEN)),
+        transform: Transform::from_translation(Vec3::new(50., 0., 0.)),
+        ..default()
+    });
+
+    // commands.spawn(ShapeBundle {
+    //     transform: Transform::from_translation(Vec3::new(50., 0., 0.)),
+    //     path: shapes::RegularPolygon {
+    //         sides: 6,
+    //         feature: shapes::RegularPolygonFeature::Radius(20.),
+    //         ..Default::default()
+    //     },
+    //     ..default(),
+    // });
+
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(20.).into()).into(),

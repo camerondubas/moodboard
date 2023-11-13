@@ -4,7 +4,9 @@ use bevy::{
 };
 use rand::seq::SliceRandom;
 
-use crate::{events::AddPostItEvent, hold::Holdable, item::Item, theme::colors::Palette};
+use crate::{
+    events::AddPostItEvent, hold::Holdable, item::Item, select::Selectable, theme::colors::Palette,
+};
 
 const POST_IT_COLORS: [Color; 6] = [
     Palette::AMBER_200,
@@ -71,7 +73,7 @@ fn draw_initial_post_its(mut commands: Commands) {
 }
 
 fn add_post_it(mut commands: Commands, mut events: EventReader<AddPostItEvent>) {
-    for event in events.iter() {
+    for event in events.read() {
         let color = POST_IT_COLORS.choose(&mut rand::thread_rng()).unwrap();
         draw_post_it(
             &mut commands,
@@ -101,6 +103,7 @@ fn draw_post_it(commands: &mut Commands, position: Vec3, color: Color, text: &st
                 ..Default::default()
             },
             Holdable,
+            Selectable,
             Item,
             Name::new("Post-it Note"),
         ))
