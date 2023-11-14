@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::CursorWorldCoords;
 
@@ -23,24 +23,21 @@ fn hold_while_clicked(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
     cursor_coords: Res<CursorWorldCoords>,
-    holdable_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Holdable>, Without<Held>)>,
+    holdable_query: Query<(Entity, &GlobalTransform, &Aabb), (With<Holdable>, Without<Held>)>,
     held_query: Query<Entity, With<Held>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let mut possible = vec![];
         // If this gets more complex, look into this package:
         // https://github.com/aevyrie/bevy_mod_picking/issues/7
-        for (entity, transform, sprite) in holdable_query.iter() {
+        for (entity, transform, aabb) in holdable_query.iter() {
             let coords = cursor_coords.0;
-            let sprite_size = sprite
-                .custom_size
-                .expect("Sprite must have custom size to be holdable");
             let translation = transform.translation();
             let sprite_x_position = translation.x;
             let sprite_y_position = translation.y;
 
-            let half_width = sprite_size.x / 2.;
-            let half_height = sprite_size.y / 2.;
+            let half_width = aabb.half_extents.x;
+            let half_height = aabb.half_extents.y;
 
             let x_range = sprite_x_position - half_width..sprite_x_position + half_width;
             let y_range = sprite_y_position - half_height..sprite_y_position + half_height;

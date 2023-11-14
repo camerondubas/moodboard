@@ -15,6 +15,7 @@ use bevy::{
     window::{PrimaryWindow, WindowResolution},
 };
 use bevy_pancam::{PanCam, PanCamPlugin};
+use bevy_prototype_lyon::prelude::*;
 use canvas::CanvasPlugin;
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
@@ -46,6 +47,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             DebugPlugin,
             ThemePlugin,
             UiPlugin,
+            ShapePlugin,
             PostItPlugin,
             DragAndDropPlugin,
             ItemPlugin,
@@ -123,25 +125,6 @@ fn setup(
         min_scale: 1.0,
         ..Default::default()
     });
-
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes
-            .add(shape::Quad::new(Vec2::new(50., 100.)).into())
-            .into(),
-        material: materials.add(ColorMaterial::from(Color::LIME_GREEN)),
-        transform: Transform::from_translation(Vec3::new(50., 0., 0.)),
-        ..default()
-    });
-
-    // commands.spawn(ShapeBundle {
-    //     transform: Transform::from_translation(Vec3::new(50., 0., 0.)),
-    //     path: shapes::RegularPolygon {
-    //         sides: 6,
-    //         feature: shapes::RegularPolygonFeature::Radius(20.),
-    //         ..Default::default()
-    //     },
-    //     ..default(),
-    // });
 
     commands.spawn((
         MaterialMesh2dBundle {

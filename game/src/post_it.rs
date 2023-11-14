@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     text::{BreakLineOn, Text2dBounds},
 };
+use bevy_prototype_lyon::prelude::*;
 use rand::seq::SliceRandom;
 
 use crate::{
@@ -17,6 +18,7 @@ const POST_IT_COLORS: [Color; 6] = [
     Palette::SLATE_400,
 ];
 
+const POST_IT_SIZE: Vec2 = Vec2::new(400., 420.);
 pub struct PostItPlugin;
 
 impl Plugin for PostItPlugin {
@@ -85,23 +87,24 @@ fn add_post_it(mut commands: Commands, mut events: EventReader<AddPostItEvent>) 
 }
 
 fn draw_post_it(commands: &mut Commands, position: Vec3, color: Color, text: &str) {
-    let size = Vec2::new(400., 420.);
     let text_style = TextStyle {
         font_size: 32.0,
         color: Palette::GRAY_700.with_a(0.8),
         ..Default::default()
     };
+
     commands
         .spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    color,
-                    custom_size: Some(size),
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&shapes::Rectangle {
+                    extents: POST_IT_SIZE,
                     ..Default::default()
-                },
-                transform: Transform::from_translation(position),
+                }),
+                spatial: SpatialBundle::from_transform(Transform::from_translation(position)),
                 ..Default::default()
             },
+            Fill::color(color),
+            Stroke::new(Color::BLACK.with_a(0.7), 5.0),
             Holdable,
             Selectable,
             Item,
@@ -109,19 +112,20 @@ fn draw_post_it(commands: &mut Commands, position: Vec3, color: Color, text: &st
         ))
         .with_children(|builder| {
             builder.spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Palette::GRAY_600.with_a(0.6),
-                        custom_size: Some(size),
+                ShapeBundle {
+                    path: GeometryBuilder::build_as(&shapes::Rectangle {
+                        extents: POST_IT_SIZE,
                         ..Default::default()
-                    },
-                    transform: Transform::from_translation(Vec3::new(10., -10., -0.1)),
+                    }),
+                    spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
+                        10., -10., -0.1,
+                    ))),
                     ..Default::default()
                 },
+                Fill::color(Palette::GRAY_600.with_a(0.6)),
                 Name::new("Post-it Note Shadow"),
             ));
 
-            let z = Vec3::new(0., 0., 0.1);
             builder.spawn(Text2dBundle {
                 text: Text {
                     sections: vec![TextSection::new(text, text_style.clone())],
@@ -130,11 +134,11 @@ fn draw_post_it(commands: &mut Commands, position: Vec3, color: Color, text: &st
                 },
                 text_2d_bounds: Text2dBounds {
                     // Wrap text in the rectangle
-                    size: size * 0.8,
+                    size: POST_IT_SIZE * 0.8,
                 },
 
                 // ensure the text is drawn on top of the box
-                transform: Transform::from_translation(z),
+                transform: Transform::from_translation(Vec3::new(0., 0., 0.1)),
                 ..default()
             });
         });
