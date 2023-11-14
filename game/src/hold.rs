@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use crate::select::Selectable;
 use crate::CursorWorldCoords;
 use bevy::render::primitives::Aabb;
 
@@ -11,9 +12,6 @@ impl Plugin for DragAndDropPlugin {
 }
 
 #[derive(Component)]
-pub struct Holdable;
-
-#[derive(Component)]
 pub struct Held {
     /// The offset between the cursor and the center of the sprite when it was clicked.
     pub offset: Vec2,
@@ -23,19 +21,19 @@ fn hold_while_clicked(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
     cursor_coords: Res<CursorWorldCoords>,
-    holdable_query: Query<(Entity, &GlobalTransform, &Aabb), (With<Holdable>, Without<Held>)>,
+    selectable_query: Query<(Entity, &GlobalTransform, &Aabb), (With<Selectable>, Without<Held>)>,
     held_query: Query<Entity, With<Held>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let mut possible = vec![];
         // If this gets more complex, look into this package:
         // https://github.com/aevyrie/bevy_mod_picking/issues/7
-        for (entity, transform, aabb) in holdable_query.iter() {
+        for (entity, transform, aabb) in selectable_query.iter() {
             let coords = cursor_coords.0;
             let translation = transform.translation();
-            let is_cursor_over_holdable = is_cursor_over(coords, translation, aabb);
+            let is_cursor_over_selectable = is_cursor_over(coords, translation, aabb);
 
-            if is_cursor_over_holdable {
+            if is_cursor_over_selectable {
                 let offset = Vec2::new(coords.x - translation.x, coords.y - translation.y);
                 possible.push((entity, offset, translation.z));
             }

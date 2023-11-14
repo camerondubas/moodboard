@@ -2,7 +2,6 @@ use bevy::render::primitives::Aabb;
 
 use crate::hold::is_cursor_over;
 use crate::hold::Held;
-use crate::hold::Holdable;
 use crate::prelude::*;
 use crate::CursorWorldCoords;
 
@@ -14,7 +13,14 @@ pub struct SelectPlugin;
 
 impl Plugin for SelectPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (start_selection_box, size_selection_box));
+        app.add_systems(
+            Update,
+            (
+                start_selection_box,
+                size_selection_box,
+                end_selection_box.after(size_selection_box),
+            ),
+        );
     }
 }
 
@@ -27,19 +33,20 @@ pub struct SelectionBox {
 #[derive(Component)]
 pub struct Selectable;
 
+#[derive(Component)]
+pub struct Selected;
+
 fn size_selection_box(
     mut commands: Commands,
-    mouse_button_input: Res<Input<MouseButton>>,
     cursor_coords: Res<CursorWorldCoords>,
-    mut selection_box_query: Query<(Entity, &GlobalTransform), (With<SelectionBox>, With<Path>)>,
+    selectable_query: Query<(Entity, &GlobalTransform, &Aabb), (With<Selectable>, Without<Held>)>,
+    mut selection_box_query: Query<
+        (Entity, &SelectionBox),
+        (With<SelectionBox>, With<Path>, Without<Selectable>),
+    >,
 ) {
-    if let Ok((entity, transform)) = selection_box_query.get_single_mut() {
-        if !mouse_button_input.pressed(MouseButton::Left) {
-            commands.entity(entity).despawn();
-            return;
-        }
-
-        let distance = cursor_coords.0 - transform.translation().xy();
+    if let Ok((entity, selection_box)) = selection_box_query.get_single_mut() {
+        let distance = cursor_coords.0 - selection_box.start;
         let path = GeometryBuilder::build_as(&shapes::Rectangle {
             extents: distance.abs(),
             origin: get_anchor(distance),
@@ -47,19 +54,45 @@ fn size_selection_box(
 
         commands.entity(entity).remove::<Path>();
         commands.entity(entity).insert(path);
+
+        let start = selection_box.start;
+        let end = cursor_coords.0;
+
+        let selection_top_left = Vec2::new(start.x.min(end.x), start.y.max(end.y));
+        let selection_bottom_right = Vec2::new(start.x.max(end.x), start.y.min(end.y));
+
+        selectable_query.for_each(|(en, transform, aabb)| {
+            // check if the entity is within the selection box
+            let translation = transform.translation();
+            let min_x = translation.x - aabb.half_extents.x;
+            let max_x = translation.x + aabb.half_extents.x;
+            let min_y = translation.y - aabb.half_extents.y;
+            let max_y = translation.y + aabb.half_extents.y;
+
+            let is_within_selection_box = max_x >= selection_top_left.x
+                && selection_bottom_right.x >= min_x
+                && max_y >= selection_bottom_right.y
+                && selection_top_left.y >= min_y;
+
+            if is_within_selection_box {
+                commands.entity(en).insert(Selected);
+            } else {
+                commands.entity(en).remove::<Selected>();
+            }
+        });
     }
 }
 
 fn start_selection_box(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
-    holdable_query: Query<(&GlobalTransform, &Aabb), (With<Holdable>, Without<Held>)>,
+    selectable_query: Query<(&GlobalTransform, &Aabb), (With<Selectable>, Without<Held>)>,
     cursor_coords: Res<CursorWorldCoords>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let coords = cursor_coords.0;
 
-        if holdable_query
+        if selectable_query
             .iter()
             .any(|(transform, aabb)| is_cursor_over(coords, transform.translation(), aabb))
         {
@@ -85,6 +118,18 @@ fn start_selection_box(
             },
             Name::new("Selection Box"),
         ));
+    }
+}
+
+fn end_selection_box(
+    mut commands: Commands,
+    mouse_button_input: Res<Input<MouseButton>>,
+    mut selection_box_query: Query<Entity, (With<SelectionBox>, With<Path>, Without<Selectable>)>,
+) {
+    if mouse_button_input.just_released(MouseButton::Left) {
+        if let Ok(entity) = selection_box_query.get_single_mut() {
+            commands.entity(entity).despawn();
+        }
     }
 }
 
