@@ -33,17 +33,10 @@ fn hold_while_clicked(
         for (entity, transform, aabb) in holdable_query.iter() {
             let coords = cursor_coords.0;
             let translation = transform.translation();
-            let sprite_x_position = translation.x;
-            let sprite_y_position = translation.y;
+            let is_cursor_over_holdable = is_cursor_over(coords, translation, aabb);
 
-            let half_width = aabb.half_extents.x;
-            let half_height = aabb.half_extents.y;
-
-            let x_range = sprite_x_position - half_width..sprite_x_position + half_width;
-            let y_range = sprite_y_position - half_height..sprite_y_position + half_height;
-
-            if x_range.contains(&coords.x) && y_range.contains(&coords.y) {
-                let offset = Vec2::new(coords.x - sprite_x_position, coords.y - sprite_y_position);
+            if is_cursor_over_holdable {
+                let offset = Vec2::new(coords.x - translation.x, coords.y - translation.y);
                 possible.push((entity, offset, translation.z));
             }
         }
@@ -75,4 +68,14 @@ fn move_held_entities(
             transform.translation.y = cursor.y - held.offset.y;
         }
     }
+}
+
+pub fn is_cursor_over(coords: Vec2, translation: Vec3, aabb: &Aabb) -> bool {
+    let half_width = aabb.half_extents.x;
+    let half_height = aabb.half_extents.y;
+
+    let x_range = translation.x - half_width..translation.x + half_width;
+    let y_range = translation.y - half_height..translation.y + half_height;
+
+    x_range.contains(&coords.x) && y_range.contains(&coords.y)
 }

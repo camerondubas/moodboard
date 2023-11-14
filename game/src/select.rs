@@ -1,14 +1,20 @@
+use bevy::render::primitives::Aabb;
+
+use crate::hold::is_cursor_over;
+use crate::hold::Held;
+use crate::hold::Holdable;
 use crate::prelude::*;
 use crate::CursorWorldCoords;
 
 const MAX_Z: f32 = 999.0;
 const SELECT_BOX_COLOR: Color = Palette::BLUE_400;
+const SELECT_BOX_STROKE_WIDTH: f32 = 2.0;
 
 pub struct SelectPlugin;
 
 impl Plugin for SelectPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, draw_selection_box);
+        app.add_systems(Update, (start_selection_box, size_selection_box));
     }
 }
 
@@ -21,7 +27,7 @@ pub struct SelectionBox {
 #[derive(Component)]
 pub struct Selectable;
 
-fn draw_selection_box(
+fn size_selection_box(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
     cursor_coords: Res<CursorWorldCoords>,
@@ -41,30 +47,44 @@ fn draw_selection_box(
 
         commands.entity(entity).remove::<Path>();
         commands.entity(entity).insert(path);
-    } else {
-        if mouse_button_input.just_pressed(MouseButton::Left) {
-            commands.spawn((
-                ShapeBundle {
-                    path: GeometryBuilder::build_as(&shapes::Rectangle {
-                        extents: Vec2::new(0.0, 0.0),
-                        origin: shapes::RectangleOrigin::TopLeft,
-                    }),
-                    spatial: SpatialBundle::from_transform(Transform::from_xyz(
-                        cursor_coords.0.x,
-                        cursor_coords.0.y,
-                        MAX_Z,
-                    )),
-                    ..Default::default()
-                },
-                Fill::color(SELECT_BOX_COLOR.with_a(0.3)),
-                Stroke::new(SELECT_BOX_COLOR, 2.0),
-                SelectionBox {
-                    start: cursor_coords.0,
-                    end: None,
-                },
-                Name::new("Selection Box"),
-            ));
+    }
+}
+
+fn start_selection_box(
+    mut commands: Commands,
+    mouse_button_input: Res<Input<MouseButton>>,
+    holdable_query: Query<(&GlobalTransform, &Aabb), (With<Holdable>, Without<Held>)>,
+    cursor_coords: Res<CursorWorldCoords>,
+) {
+    if mouse_button_input.just_pressed(MouseButton::Left) {
+        let coords = cursor_coords.0;
+
+        if holdable_query
+            .iter()
+            .any(|(transform, aabb)| is_cursor_over(coords, transform.translation(), aabb))
+        {
+            return;
         }
+
+        commands.spawn((
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&shapes::Rectangle {
+                    extents: Vec2::new(0.0, 0.0),
+                    origin: shapes::RectangleOrigin::TopLeft,
+                }),
+                spatial: SpatialBundle::from_transform(Transform::from_xyz(
+                    coords.x, coords.y, MAX_Z,
+                )),
+                ..Default::default()
+            },
+            Fill::color(SELECT_BOX_COLOR.with_a(0.3)),
+            Stroke::new(SELECT_BOX_COLOR, SELECT_BOX_STROKE_WIDTH),
+            SelectionBox {
+                start: coords,
+                end: None,
+            },
+            Name::new("Selection Box"),
+        ));
     }
 }
 
