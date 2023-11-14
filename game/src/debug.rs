@@ -17,7 +17,13 @@ impl Plugin for DebugPlugin {
         .add_systems(Startup, display_debug)
         .add_systems(
             Update,
-            (fps_counter, on_window_resize, cursor_position, item_counter),
+            (
+                fps_counter,
+                frame_time,
+                on_window_resize,
+                cursor_position,
+                item_counter,
+            ),
         );
     }
 }
@@ -30,6 +36,9 @@ struct ItemCounterText;
 
 #[derive(Component)]
 struct FpsText;
+
+#[derive(Component)]
+struct FrameTimeText;
 
 #[derive(Component)]
 struct ResolutionText;
@@ -74,6 +83,14 @@ fn display_debug(
 
             parent.spawn((
                 TextBundle::from_sections([
+                    TextSection::new("Frame Time: ", text_style.clone()),
+                    TextSection::new("0", text_style.clone()),
+                ]),
+                FrameTimeText,
+            ));
+
+            parent.spawn((
+                TextBundle::from_sections([
                     TextSection::new("Cursor: ", text_style.clone()),
                     TextSection::new("0, 0", text_style.clone()),
                 ]),
@@ -101,6 +118,20 @@ fn fps_counter(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, W
     for mut text in &mut query {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(value) = fps.smoothed() {
+                // Update the value of the second section
+                text.sections[1].value = format!("{value:.2}");
+            }
+        }
+    }
+}
+
+fn frame_time(
+    diagnostics: Res<DiagnosticsStore>,
+    mut query: Query<&mut Text, With<FrameTimeText>>,
+) {
+    for mut text in &mut query {
+        if let Some(frame_time) = diagnostics.get(FrameTimeDiagnosticsPlugin::FRAME_TIME) {
+            if let Some(value) = frame_time.smoothed() {
                 // Update the value of the second section
                 text.sections[1].value = format!("{value:.2}");
             }
