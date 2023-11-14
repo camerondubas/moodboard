@@ -1,7 +1,12 @@
 - feat(events): add an output event system to send events to the leptos web app.
   - poc, disable button when ball is at upper border
   - handle text properly.
-
-- look into bevy_cosmic_edit
-- look into bevy_prototype_lyon
-- custom stroke component (draws 4 rects on the inside of the parent bounds)
+- refactor(events): Set up some more general events for message passing
+- Theming component that takes both light and dark mode styles
+  - single system that tells everything with the theming component to update styles
+- move all selected at the same time
+- feat: "add text object"
+- feat: "add image"
+- feat: "add color swatch"
+- feat: rich text
+  - look into bevy_cosmic_edit
