@@ -1,6 +1,5 @@
-use bevy::prelude::*;
-
 use crate::events::ResizeEvent;
+use crate::prelude::*;
 
 pub struct CanvasPlugin;
 

@@ -1,6 +1,4 @@
-use bevy::prelude::*;
-
-use crate::theme::colors::Palette;
+use crate::prelude::*;
 
 pub struct UiPlugin;
 

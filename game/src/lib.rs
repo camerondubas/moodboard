@@ -4,24 +4,24 @@ pub mod events;
 mod hold;
 mod item;
 mod post_it;
+pub mod prelude;
 mod select;
 pub mod theme;
 mod ui;
 
 use bevy::{
-    prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
     sprite::{Material2d, MaterialMesh2dBundle},
     window::{PrimaryWindow, WindowResolution},
 };
 use bevy_pancam::{PanCam, PanCamPlugin};
-use bevy_prototype_lyon::prelude::*;
 use canvas::CanvasPlugin;
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
 use hold::DragAndDropPlugin;
 use item::ItemPlugin;
 use post_it::PostItPlugin;
+use prelude::*;
 use select::SelectPlugin;
 use theme::ThemePlugin;
 use ui::UiPlugin;

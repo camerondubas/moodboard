@@ -1,12 +1,9 @@
-use bevy::{
-    diagnostic::{
-        DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
-    },
-    prelude::*,
+use crate::prelude::*;
+use crate::{events::ResizeEvent, item::ItemCounterResource, CursorWorldCoords};
+use bevy::diagnostic::{
+    DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-
-use crate::{events::ResizeEvent, item::ItemCounterResource, CursorWorldCoords};
 
 pub struct DebugPlugin;
 

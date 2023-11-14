@@ -1,7 +1,5 @@
-use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::*;
-
-use crate::{theme::colors::Palette, CursorWorldCoords};
+use crate::prelude::*;
+use crate::CursorWorldCoords;
 
 const MAX_Z: f32 = 999.0;
 const SELECT_BOX_COLOR: Color = Palette::BLUE_400;

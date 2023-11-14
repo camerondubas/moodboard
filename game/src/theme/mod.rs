@@ -1,9 +1,6 @@
 pub mod colors;
-use bevy::prelude::*;
-
 use crate::events::ThemeEvent;
-
-use self::colors::Palette;
+use crate::prelude::*;
 
 #[derive(Clone, Debug)]
 pub enum Theme {

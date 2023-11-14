@@ -1,13 +1,8 @@
-use bevy::{
-    prelude::*,
-    text::{BreakLineOn, Text2dBounds},
-};
-use bevy_prototype_lyon::prelude::*;
+use crate::prelude::*;
+use bevy::text::{BreakLineOn, Text2dBounds};
 use rand::seq::SliceRandom;
 
-use crate::{
-    events::AddPostItEvent, hold::Holdable, item::Item, select::Selectable, theme::colors::Palette,
-};
+use crate::{events::AddPostItEvent, hold::Holdable, item::Item, select::Selectable};
 
 const POST_IT_COLORS: [Color; 6] = [
     Palette::AMBER_200,
