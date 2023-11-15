@@ -13,3 +13,6 @@ bevy_prototype_lyon = "0.10.0"
 console_error_panic_hook = "0.1"
 crossbeam-channel = "0.5.8"
 rand = "0.8.5"
+
+[features]
+debug = []

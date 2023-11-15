@@ -1,4 +1,5 @@
 mod canvas;
+#[cfg(feature = "debug")]
 mod debug;
 pub mod events;
 mod hold;
@@ -16,6 +17,8 @@ use bevy::{
 };
 use bevy_pancam::{PanCam, PanCamPlugin};
 use canvas::CanvasPlugin;
+
+#[cfg(feature = "debug")]
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
 use hold::DragAndDropPlugin;
@@ -44,6 +47,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             PanCamPlugin::default(),
             // Material2dPlugin::<CustomMaterial>::default(),
             event_plugin,
+            #[cfg(feature = "debug")]
             DebugPlugin,
             ThemePlugin,
             UiPlugin,
@@ -85,7 +89,6 @@ fn my_cursor_system(
         .map(|ray| ray.origin.truncate())
     {
         cursor_coords.0 = world_position;
-        debug!("World coords: {}/{}", world_position.x, world_position.y);
     }
 }
 
