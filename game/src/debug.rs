@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use crate::{events::ResizeEvent, item::ItemCounterResource, CursorWorldCoords};
+use crate::{events::ResizeEvent, hold::HoldInfo, item::ItemCounterResource, CursorWorldCoords};
 use bevy::diagnostic::{
     DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
 };
@@ -23,6 +23,7 @@ impl Plugin for DebugPlugin {
                 on_window_resize,
                 cursor_position,
                 item_counter,
+                hold_info,
             ),
         );
     }
@@ -30,6 +31,9 @@ impl Plugin for DebugPlugin {
 
 #[derive(Component)]
 struct CursorText;
+
+#[derive(Component)]
+struct HeldText;
 
 #[derive(Component)]
 struct ItemCounterText;
@@ -107,9 +111,17 @@ fn display_debug(
             parent.spawn((
                 TextBundle::from_sections([
                     TextSection::new("Resolution: ", text_style.clone()),
-                    TextSection::new(format!("{} x {}", width, height), text_style),
+                    TextSection::new(format!("{:.0} x {:.0}", width, height), text_style.clone()),
                 ]),
                 ResolutionText,
+            ));
+
+            parent.spawn((
+                TextBundle::from_sections([
+                    TextSection::new("Held: ", text_style.clone()),
+                    TextSection::new("?", text_style),
+                ]),
+                HeldText,
             ));
         });
 }
@@ -119,7 +131,7 @@ fn fps_counter(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, W
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(value) = fps.smoothed() {
                 // Update the value of the second section
-                text.sections[1].value = format!("{value:.2}");
+                text.sections[1].value = format!("{value:.0}");
             }
         }
     }
@@ -133,7 +145,7 @@ fn frame_time(
         if let Some(frame_time) = diagnostics.get(FrameTimeDiagnosticsPlugin::FRAME_TIME) {
             if let Some(value) = frame_time.smoothed() {
                 // Update the value of the second section
-                text.sections[1].value = format!("{value:.2}");
+                text.sections[1].value = format!("{value:.0}");
             }
         }
     }
@@ -145,8 +157,21 @@ fn cursor_position(
 ) {
     for mut text in &mut query {
         // Update the value of the second section
-        text.sections[1].value =
-            format!("{}, {}", cursor_coords.0.x as i32, cursor_coords.0.y as i32);
+        text.sections[1].value = format!(
+            "{:.0}, {:.0}",
+            cursor_coords.0.x as i32, cursor_coords.0.y as i32
+        );
+    }
+}
+
+fn hold_info(hold_info: Res<HoldInfo>, mut query: Query<&mut Text, With<HeldText>>) {
+    for mut text in &mut query {
+        // Update the value of the second section
+        if let Some(start_position) = hold_info.start_position {
+            text.sections[1].value = format!("{:.0}, {:.0}", start_position.x, start_position.y);
+        } else {
+            text.sections[1].value = format!("None");
+        }
     }
 }
 
@@ -166,7 +191,7 @@ fn on_window_resize(
 ) {
     for event in resize_event_reader.read() {
         for mut text in &mut query {
-            text.sections[1].value = format!("{} x {}", event.width, event.height);
+            text.sections[1].value = format!("{:.0} x {:.0}", event.width, event.height);
         }
     }
 }

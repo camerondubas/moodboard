@@ -34,7 +34,9 @@ pub struct SelectionBox {
 pub struct Selectable;
 
 #[derive(Component)]
-pub struct Selected;
+pub struct Selected {
+    pub start_position: Vec2,
+}
 
 fn size_selection_box(
     mut commands: Commands,
@@ -75,7 +77,9 @@ fn size_selection_box(
                 && selection_top_left.y >= min_y;
 
             if is_within_selection_box {
-                commands.entity(en).insert(Selected);
+                commands.entity(en).insert(Selected {
+                    start_position: translation.xy(),
+                });
             } else {
                 commands.entity(en).remove::<Selected>();
             }
