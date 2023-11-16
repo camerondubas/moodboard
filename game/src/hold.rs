@@ -54,7 +54,7 @@ fn hold_entities(
     selected_query: Query<Entity, With<Selected>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
-        let mut possible = vec![];
+        let mut topmost: Option<(Entity, Vec3)> = None;
         // If this gets more complex, look into this package:
         // https://github.com/aevyrie/bevy_mod_picking/issues/7
         for (entity, transform, aabb) in selectable_query.iter() {
@@ -63,14 +63,17 @@ fn hold_entities(
             let is_cursor_over_selectable = is_cursor_over(coords, translation, aabb);
 
             if is_cursor_over_selectable {
-                possible.push((entity, translation));
+                if let Some((_, top_translation)) = topmost {
+                    if top_translation.z < translation.z {
+                        topmost = Some((entity, translation));
+                    }
+                } else {
+                    topmost = Some((entity, translation));
+                }
             }
         }
 
-        if possible.len() > 0 {
-            possible.sort_by(|(_, a), (_, b)| b.z.partial_cmp(&a.z).unwrap());
-            let (entity, translation) = possible[0];
-
+        if let Some((entity, translation)) = topmost {
             if let Ok((unselected_entity, mut transform)) = unselected_query.get_mut(entity) {
                 let nothing_selected = selected_query.is_empty();
                 commands.entity(unselected_entity).insert(Selected {
