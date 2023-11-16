@@ -33,7 +33,7 @@ impl Plugin for DebugPlugin {
 struct CursorText;
 
 #[derive(Component)]
-struct HeldText;
+struct HoldText;
 
 #[derive(Component)]
 struct ItemCounterText;
@@ -118,10 +118,10 @@ fn display_debug(
 
             parent.spawn((
                 TextBundle::from_sections([
-                    TextSection::new("Held: ", text_style.clone()),
+                    TextSection::new("Hold Info: ", text_style.clone()),
                     TextSection::new("?", text_style),
                 ]),
-                HeldText,
+                HoldText,
             ));
         });
 }
@@ -164,7 +164,7 @@ fn cursor_position(
     }
 }
 
-fn hold_info(hold_info: Res<HoldInfo>, mut query: Query<&mut Text, With<HeldText>>) {
+fn hold_info(hold_info: Res<HoldInfo>, mut query: Query<&mut Text, With<HoldText>>) {
     for mut text in &mut query {
         // Update the value of the second section
         if let Some(start_position) = hold_info.start_position {

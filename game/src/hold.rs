@@ -43,13 +43,6 @@ impl HoldInfo {
     }
 }
 
-#[derive(Component)]
-pub struct Held {
-    /// The offset between the cursor and the center of the sprite when it was clicked.
-    pub offset: Vec2,
-    pub start: Vec2,
-}
-
 fn hold_entities(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
@@ -58,7 +51,7 @@ fn hold_entities(
     mut item_counter: ResMut<ItemCounterResource>,
     selectable_query: Query<(Entity, &GlobalTransform, &Aabb), With<Selectable>>,
     mut unselected_query: Query<(Entity, &mut Transform), (With<Selectable>, Without<Selected>)>,
-    selected_query: Query<(Entity), With<Selected>>,
+    selected_query: Query<Entity, With<Selected>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let mut possible = vec![];

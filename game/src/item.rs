@@ -1,4 +1,3 @@
-use crate::hold::Held;
 use crate::prelude::*;
 pub struct ItemPlugin;
 
@@ -32,7 +31,7 @@ pub struct Item;
 
 fn increment_item_counter(
     mut item_counter: ResMut<ItemCounterResource>,
-    mut query: Query<&mut Transform, Or<(Added<Item>, Added<Held>)>>,
+    mut query: Query<&mut Transform, Added<Item>>,
 ) {
     for mut transform in query.iter_mut() {
         item_counter.0.increment();

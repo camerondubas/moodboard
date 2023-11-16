@@ -1,7 +1,6 @@
 use bevy::render::primitives::Aabb;
 
 use crate::hold::is_cursor_over;
-use crate::hold::Held;
 use crate::prelude::*;
 use crate::CursorWorldCoords;
 
@@ -41,7 +40,7 @@ pub struct Selected {
 fn size_selection_box(
     mut commands: Commands,
     cursor_coords: Res<CursorWorldCoords>,
-    selectable_query: Query<(Entity, &GlobalTransform, &Aabb), (With<Selectable>, Without<Held>)>,
+    selectable_query: Query<(Entity, &GlobalTransform, &Aabb), With<Selectable>>,
     mut selection_box_query: Query<
         (Entity, &SelectionBox),
         (With<SelectionBox>, With<Path>, Without<Selectable>),
@@ -90,7 +89,7 @@ fn size_selection_box(
 fn start_selection_box(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
-    selectable_query: Query<(&GlobalTransform, &Aabb), (With<Selectable>, Without<Held>)>,
+    selectable_query: Query<(&GlobalTransform, &Aabb), With<Selectable>>,
     cursor_coords: Res<CursorWorldCoords>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
