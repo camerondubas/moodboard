@@ -7,6 +7,8 @@ use crate::CursorWorldCoords;
 const MAX_Z: f32 = 999.0;
 const SELECT_BOX_COLOR: Color = Palette::BLUE_400;
 const SELECT_BOX_STROKE_WIDTH: f32 = 2.0;
+const SELECTED_RECT_COLOR: Color = Palette::PURPLE_600;
+const SELECTED_RECT_STROKE_WIDTH: f32 = 5.0;
 
 pub struct SelectPlugin;
 
@@ -18,6 +20,9 @@ impl Plugin for SelectPlugin {
                 start_selection_box,
                 size_selection_box,
                 end_selection_box.after(size_selection_box),
+                create_selected_rect,
+                update_selected_box,
+                remove_selected_box,
             ),
         );
     }
@@ -31,6 +36,11 @@ pub struct SelectionBox {
 
 #[derive(Component)]
 pub struct Selectable;
+
+#[derive(Component, Default)]
+pub struct SelectedRect {
+    pub rect: Rect,
+}
 
 #[derive(Component)]
 pub struct Selected {
@@ -136,6 +146,72 @@ fn end_selection_box(
     }
 }
 
+fn create_selected_rect(
+    mut commands: Commands,
+    newly_selected_query: Query<(&GlobalTransform, &Aabb), Added<Selected>>,
+    selected_rect_query: Query<&mut SelectedRect>,
+) {
+    if newly_selected_query.is_empty() || !selected_rect_query.is_empty() {
+        return;
+    };
+
+    if let Some(rect) = get_surrounding_rect(newly_selected_query.iter().collect::<Vec<_>>()) {
+        commands.spawn((
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&shapes::Rectangle {
+                    extents: Vec2::new(rect.width(), rect.height()),
+                    origin: shapes::RectangleOrigin::TopLeft,
+                }),
+                spatial: SpatialBundle::from_transform(Transform::from_xyz(
+                    rect.min.x, rect.max.y, MAX_Z,
+                )),
+                ..Default::default()
+            },
+            Stroke::new(SELECTED_RECT_COLOR, SELECTED_RECT_STROKE_WIDTH),
+            SelectedRect { rect },
+            Name::new("Selected Rect"),
+        ));
+    }
+}
+
+fn update_selected_box(
+    mut commands: Commands,
+    new_selected_query: Query<Entity, Added<Selected>>,
+    selected_query: Query<(&GlobalTransform, &Aabb), With<Selected>>,
+    mut selected_rect_query: Query<(Entity, &mut SelectedRect, &mut Transform)>,
+    removed: RemovedComponents<Selected>,
+) {
+    if new_selected_query.is_empty() && removed.is_empty() {
+        return;
+    };
+
+    if let Ok((entity, mut selected_box, mut transform)) = selected_rect_query.get_single_mut() {
+        if let Some(rect) = get_surrounding_rect(selected_query.iter().collect::<Vec<_>>()) {
+            selected_box.rect = rect;
+            let path = GeometryBuilder::build_as(&shapes::Rectangle {
+                extents: Vec2::new(rect.width(), rect.height()),
+                origin: shapes::RectangleOrigin::TopLeft,
+            });
+
+            transform.translation = Vec3::new(rect.min.x, rect.max.y, MAX_Z);
+
+            commands.entity(entity).remove::<Path>();
+            commands.entity(entity).insert(path);
+        }
+    }
+}
+
+fn remove_selected_box(
+    mut commands: Commands,
+    selected_query: Query<Entity, With<Selected>>,
+    mut selected_rect_query: Query<Entity, With<SelectedRect>>,
+) {
+    if selected_query.is_empty() {
+        if let Ok(entity) = selected_rect_query.get_single_mut() {
+            commands.entity(entity).despawn();
+        }
+    };
+}
 fn get_anchor(position: Vec2) -> shapes::RectangleOrigin {
     match (position.x, position.y) {
         (x, y) if x > 0.0 && y > 0.0 => shapes::RectangleOrigin::BottomLeft,
@@ -144,4 +220,16 @@ fn get_anchor(position: Vec2) -> shapes::RectangleOrigin {
         (x, y) if x < 0.0 && y < 0.0 => shapes::RectangleOrigin::TopRight,
         _ => shapes::RectangleOrigin::Center,
     }
+}
+
+fn get_surrounding_rect(query: Vec<(&GlobalTransform, &Aabb)>) -> Option<Rect> {
+    let mut rect_option: Option<Rect> = None;
+    for (transform, aabb) in query {
+        let rect =
+            Rect::from_center_half_size(transform.translation().xy(), aabb.half_extents.xy());
+
+        rect_option = Some(rect_option.map_or(rect, |r| r.union(rect)));
+    }
+
+    rect_option
 }
