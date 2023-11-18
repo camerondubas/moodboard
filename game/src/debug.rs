@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use crate::{events::ResizeEvent, hold::HoldInfo, item::ItemCounterResource, CursorWorldCoords};
+use crate::{events::ResizeEvent, item::ItemCounterResource, CursorWorldCoords};
 use bevy::diagnostic::{
     DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
 };
@@ -24,6 +24,7 @@ impl Plugin for DebugPlugin {
                 cursor_position,
                 item_counter,
                 hold_info,
+                hold_distance,
             ),
         );
     }
@@ -46,6 +47,9 @@ struct FrameTimeText;
 
 #[derive(Component)]
 struct ResolutionText;
+
+#[derive(Component)]
+struct HoldDistanceText;
 
 fn display_debug(
     mut commands: Commands,
@@ -119,9 +123,17 @@ fn display_debug(
             parent.spawn((
                 TextBundle::from_sections([
                     TextSection::new("Hold Info: ", text_style.clone()),
-                    TextSection::new("?", text_style),
+                    TextSection::new("?", text_style.clone()),
                 ]),
                 HoldText,
+            ));
+
+            parent.spawn((
+                TextBundle::from_sections([
+                    TextSection::new("Hold Distance: ", text_style.clone()),
+                    TextSection::new("?", text_style.clone()),
+                ]),
+                HoldDistanceText,
             ));
         });
 }
@@ -159,16 +171,31 @@ fn cursor_position(
         // Update the value of the second section
         text.sections[1].value = format!(
             "{:.0}, {:.0}",
-            cursor_coords.0.x as i32, cursor_coords.0.y as i32
+            cursor_coords.current.x as i32, cursor_coords.current.y as i32
         );
     }
 }
 
-fn hold_info(hold_info: Res<HoldInfo>, mut query: Query<&mut Text, With<HoldText>>) {
+fn hold_info(cursor_coords: Res<CursorWorldCoords>, mut query: Query<&mut Text, With<HoldText>>) {
     for mut text in &mut query {
         // Update the value of the second section
-        if let Some(start_position) = hold_info.start_position {
+        if let Some(start_position) = cursor_coords.hold_start {
             text.sections[1].value = format!("{:.0}, {:.0}", start_position.x, start_position.y);
+        } else {
+            text.sections[1].value = format!("None");
+        }
+    }
+}
+
+fn hold_distance(
+    cursor_coords: Res<CursorWorldCoords>,
+    mut query: Query<&mut Text, With<HoldDistanceText>>,
+) {
+    for mut text in &mut query {
+        // Update the value of the second section
+        if cursor_coords.is_holding() {
+            let distance = cursor_coords.hold_distance();
+            text.sections[1].value = format!("{:.0}, {:.0}", distance.x, distance.y);
         } else {
             text.sections[1].value = format!("None");
         }

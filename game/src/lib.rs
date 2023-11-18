@@ -30,7 +30,7 @@ use theme::ThemePlugin;
 use ui::UiPlugin;
 
 pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
-    let size = shared_state.lock().unwrap().window_size.clone();
+    let size = shared_state.lock().unwrap().window_size;
 
     App::new()
         .insert_resource(ClearColor(Color::BLACK))
@@ -44,7 +44,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
                 ..default()
             }),
             CanvasPlugin,
-            PanCamPlugin::default(),
+            PanCamPlugin,
             // Material2dPlugin::<CustomMaterial>::default(),
             event_plugin,
             #[cfg(feature = "debug")]
@@ -65,10 +65,28 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
 }
 
 #[derive(Resource, Default)]
-struct CursorWorldCoords(Vec2);
+struct CursorWorldCoords {
+    current: Vec2,
+    hold_start: Option<Vec2>,
+}
+
+impl CursorWorldCoords {
+    pub fn is_holding(&self) -> bool {
+        self.hold_start.is_some()
+    }
+
+    pub fn hold_distance(&self) -> Vec2 {
+        if let Some(start_position) = self.hold_start {
+            self.current - start_position
+        } else {
+            Vec2::ZERO
+        }
+    }
+}
 
 fn my_cursor_system(
     mut cursor_coords: ResMut<CursorWorldCoords>,
+    mouse_button_input: Res<Input<MouseButton>>,
     // query to get the window (so we can read the current cursor position)
     q_window: Query<&Window, With<PrimaryWindow>>,
     // query to get camera transform
@@ -88,7 +106,15 @@ fn my_cursor_system(
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
         .map(|ray| ray.origin.truncate())
     {
-        cursor_coords.0 = world_position;
+        cursor_coords.current = world_position;
+    }
+
+    if mouse_button_input.just_pressed(MouseButton::Left) {
+        cursor_coords.hold_start = Some(cursor_coords.current);
+    }
+
+    if mouse_button_input.just_released(MouseButton::Left) {
+        cursor_coords.hold_start = None;
     }
 }
 

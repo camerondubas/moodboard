@@ -4,6 +4,10 @@
 		"css:watch": "tailwindcss -i ./input.css -o style/output.css --watch"
 	},
 	"devDependencies": {
+		"caniuse-lite": "^1.0.30001563",
 		"tailwindcss": "^3.3.5"
-	}
+	},
+	"browserslist": [
+		"last 2 versions"
+	]
 }
