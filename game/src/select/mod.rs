@@ -1,5 +1,4 @@
 #![allow(clippy::type_complexity)]
-use crate::item::ItemCounterResource;
 use crate::prelude::*;
 use crate::CursorCoords;
 use bevy::render::primitives::Aabb;
@@ -248,18 +247,16 @@ fn select_entities(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
     cursor_coords: ResMut<CursorCoords>,
-    mut item_counter: ResMut<ItemCounterResource>,
     mut selectable_query: Query<
-        (Entity, &mut Transform, &GlobalTransform, &Aabb),
+        (Entity, &GlobalTransform, &Aabb),
         (With<Selectable>, Without<Selected>),
     >,
-    selected_query: Query<Entity, With<Selected>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let mut topmost_entity: Option<(Entity, Vec3)> = None;
         // If this gets more complex, look into this package:
         // https://github.com/aevyrie/bevy_mod_picking/issues/7
-        for (entity, _, global_transform, aabb) in selectable_query.iter() {
+        for (entity, global_transform, aabb) in selectable_query.iter() {
             let translation = global_transform.translation();
             let is_cursor_over_selectable =
                 Rect::from_center_half_size(translation.xy(), aabb.half_extents.xy())
@@ -277,16 +274,10 @@ fn select_entities(
         }
 
         if let Some((topmost_entity, translation)) = topmost_entity {
-            if let Ok((entity, mut transform, _, _)) = selectable_query.get_mut(topmost_entity) {
-                let nothing_selected = selected_query.is_empty();
+            if let Ok((entity, _, _)) = selectable_query.get_mut(topmost_entity) {
                 commands.entity(entity).insert(Selected {
                     start_position: translation.xy(),
                 });
-
-                if nothing_selected {
-                    item_counter.0.increment();
-                    transform.translation.z = item_counter.0.get_count();
-                }
             }
         }
     }

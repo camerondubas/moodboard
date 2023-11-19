@@ -1,5 +1,5 @@
 mod canvas;
-#[cfg(feature = "debug")]
+#[cfg(any(feature = "debug", rust_analyzer))]
 mod debug;
 pub mod events;
 mod item;
@@ -17,7 +17,7 @@ use bevy::{
 use bevy_pancam::{PanCam, PanCamPlugin};
 use canvas::CanvasPlugin;
 
-#[cfg(feature = "debug")]
+#[cfg(any(feature = "debug", rust_analyzer))]
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
 use item::ItemPlugin;
@@ -45,7 +45,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             PanCamPlugin,
             // Material2dPlugin::<CustomMaterial>::default(),
             event_plugin,
-            #[cfg(feature = "debug")]
+            #[cfg(any(feature = "debug", rust_analyzer))]
             DebugPlugin,
             ThemePlugin,
             UiPlugin,

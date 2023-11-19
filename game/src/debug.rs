@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use crate::{events::ResizeEvent, item::ItemCounterResource, CursorCoords};
+use crate::{events::ResizeEvent, item::ItemCounter, CursorCoords};
 use bevy::diagnostic::{
     DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
 };
@@ -203,12 +203,12 @@ fn hold_distance(
 }
 
 fn item_counter(
-    item_counter: Res<ItemCounterResource>,
+    item_counter: Res<ItemCounter>,
     mut query: Query<&mut Text, With<ItemCounterText>>,
 ) {
     for mut text in &mut query {
         // Update the value of the second section
-        text.sections[1].value = format!("{:.0}", item_counter.0.get_count());
+        text.sections[1].value = format!("{:.0}", item_counter.count());
     }
 }
 

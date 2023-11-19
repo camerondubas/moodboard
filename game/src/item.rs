@@ -1,27 +1,25 @@
-use crate::prelude::*;
+#![allow(clippy::type_complexity)]
+use crate::{prelude::*, select::components::Selected};
 pub struct ItemPlugin;
 
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<ItemCounterResource>()
+        app.init_resource::<ItemCounter>()
             .add_systems(Update, increment_item_counter);
     }
 }
 
 #[derive(Resource, Default)]
-pub struct ItemCounterResource(pub ItemCounter);
-
-#[derive(Default)]
 pub struct ItemCounter {
     count: f32,
 }
 
 impl ItemCounter {
-    pub fn get_count(&self) -> f32 {
+    pub fn count(&self) -> f32 {
         self.count
     }
 
-    pub fn increment(&mut self) {
+    fn increment(&mut self) {
         self.count += 1.0;
     }
 }
@@ -30,11 +28,22 @@ impl ItemCounter {
 pub struct Item;
 
 fn increment_item_counter(
-    mut item_counter: ResMut<ItemCounterResource>,
-    mut query: Query<&mut Transform, Added<Item>>,
+    mut item_counter: ResMut<ItemCounter>,
+    mut query: Query<(Entity, &mut Transform), Or<(Added<Item>, Added<Selected>)>>,
+    selected_query: Query<Entity, &Selected>,
 ) {
-    for mut transform in query.iter_mut() {
-        item_counter.0.increment();
-        transform.translation.z = item_counter.0.get_count();
+    let selected_count = selected_query.iter().count();
+    for (entity, mut transform) in query.iter_mut() {
+        let is_selected = selected_query.get(entity).is_ok();
+
+        if is_selected && selected_count > 1 {
+            // Only increment if there is only one selected item
+            // This indicates that the item was just selected, and should
+            // be brought to the front
+            continue;
+        }
+
+        item_counter.increment();
+        transform.translation.z = item_counter.count();
     }
 }
