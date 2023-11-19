@@ -2,7 +2,6 @@ mod canvas;
 #[cfg(feature = "debug")]
 mod debug;
 pub mod events;
-mod hold;
 mod item;
 mod post_it;
 pub mod prelude;
@@ -21,7 +20,6 @@ use canvas::CanvasPlugin;
 #[cfg(feature = "debug")]
 use debug::DebugPlugin;
 use events::{CounterEvent, Shared, SharedState};
-use hold::DragAndDropPlugin;
 use item::ItemPlugin;
 use post_it::PostItPlugin;
 use prelude::*;
@@ -53,7 +51,6 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             UiPlugin,
             ShapePlugin,
             PostItPlugin,
-            DragAndDropPlugin,
             ItemPlugin,
             SelectPlugin,
         ))

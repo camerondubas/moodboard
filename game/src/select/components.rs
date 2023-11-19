@@ -3,7 +3,6 @@ use crate::prelude::*;
 #[derive(Component)]
 pub(super) struct SelectionBox {
     pub start: Vec2,
-    pub end: Option<Vec2>,
 }
 
 #[derive(Component)]

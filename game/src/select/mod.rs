@@ -1,4 +1,5 @@
 #![allow(clippy::type_complexity)]
+use crate::item::ItemCounterResource;
 use crate::prelude::*;
 use crate::CursorCoords;
 use bevy::render::primitives::Aabb;
@@ -28,8 +29,9 @@ impl Plugin for SelectPlugin {
             (
                 create_selected_rect,
                 update_selected_rect,
-                remove_selected_rect,
+                select_entities,
                 move_selected_entities.after(update_selected_rect),
+                remove_selected_rect.after(move_selected_entities),
                 start_selection_box,
                 size_selection_box,
                 end_selection_box.after(size_selection_box),
@@ -113,10 +115,7 @@ fn start_selection_box(
             },
             Fill::color(SELECT_BOX_COLOR.with_a(0.3)),
             Stroke::new(SELECT_BOX_COLOR, SELECT_BOX_STROKE_WIDTH),
-            SelectionBox {
-                start: coords,
-                end: None,
-            },
+            SelectionBox { start: coords },
             Name::new("Selection Box"),
         ));
     }
@@ -207,10 +206,22 @@ fn remove_selected_rect(
 fn move_selected_entities(
     cursor_coords: Res<CursorCoords>,
     mouse_button_input: Res<Input<MouseButton>>,
-    mut selected_rect_query: Query<(&mut SelectedRect, &mut Transform)>,
+    mut selected_rect_query: Query<(&mut SelectedRect, &mut Transform), Without<Selected>>,
     selection_box_query: Query<&SelectionBox>,
-    // mut selected_query: Query<(&Selected, &mut Transform)>,
+    mut selected_query: Query<(&mut Selected, &mut Transform)>,
 ) {
+    if mouse_button_input.just_released(MouseButton::Left) {
+        if let Ok((mut selected_rect, _)) = selected_rect_query.get_single_mut() {
+            selected_rect.commit();
+
+            for (mut selected, transform) in selected_query.iter_mut() {
+                selected.start_position = transform.translation.xy();
+            }
+        }
+
+        return;
+    }
+
     if mouse_button_input.pressed(MouseButton::Left) && selection_box_query.is_empty() {
         if let Ok((mut selected_rect, mut transform)) = selected_rect_query.get_single_mut() {
             if let Some(hold_start) = cursor_coords.hold_start {
@@ -221,13 +232,62 @@ fn move_selected_entities(
                     transform.translation = (start + distance).extend(transform.translation.z);
                     selected_rect.move_to(transform.translation.xy());
                 }
+
+                for (selected, mut transform) in selected_query.iter_mut() {
+                    let distance = cursor_coords.hold_distance();
+                    let start = selected.start_position;
+
+                    transform.translation = (start + distance).extend(transform.translation.z);
+                }
             }
         }
     }
+}
 
-    if mouse_button_input.just_released(MouseButton::Left) {
-        if let Ok((mut selected_rect, _)) = selected_rect_query.get_single_mut() {
-            selected_rect.commit();
+fn select_entities(
+    mut commands: Commands,
+    mouse_button_input: Res<Input<MouseButton>>,
+    cursor_coords: ResMut<CursorCoords>,
+    mut item_counter: ResMut<ItemCounterResource>,
+    mut selectable_query: Query<
+        (Entity, &mut Transform, &GlobalTransform, &Aabb),
+        (With<Selectable>, Without<Selected>),
+    >,
+    selected_query: Query<Entity, With<Selected>>,
+) {
+    if mouse_button_input.just_pressed(MouseButton::Left) {
+        let mut topmost_entity: Option<(Entity, Vec3)> = None;
+        // If this gets more complex, look into this package:
+        // https://github.com/aevyrie/bevy_mod_picking/issues/7
+        for (entity, _, global_transform, aabb) in selectable_query.iter() {
+            let translation = global_transform.translation();
+            let is_cursor_over_selectable =
+                Rect::from_center_half_size(translation.xy(), aabb.half_extents.xy())
+                    .contains(cursor_coords.current);
+
+            if is_cursor_over_selectable {
+                if let Some((_, top_translation)) = topmost_entity {
+                    if top_translation.z < translation.z {
+                        topmost_entity = Some((entity, translation));
+                    }
+                } else {
+                    topmost_entity = Some((entity, translation));
+                }
+            }
+        }
+
+        if let Some((topmost_entity, translation)) = topmost_entity {
+            if let Ok((entity, mut transform, _, _)) = selectable_query.get_mut(topmost_entity) {
+                let nothing_selected = selected_query.is_empty();
+                commands.entity(entity).insert(Selected {
+                    start_position: translation.xy(),
+                });
+
+                if nothing_selected {
+                    item_counter.0.increment();
+                    transform.translation.z = item_counter.0.get_count();
+                }
+            }
         }
     }
 }
