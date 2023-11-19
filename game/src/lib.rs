@@ -58,19 +58,19 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             SelectPlugin,
         ))
         .insert_resource(SharedResource(shared_state))
-        .init_resource::<CursorWorldCoords>()
+        .init_resource::<CursorCoords>()
         .add_systems(Startup, setup)
         .add_systems(Update, (punch_cube, toggle_key, my_cursor_system))
         .run();
 }
 
 #[derive(Resource, Default)]
-struct CursorWorldCoords {
+struct CursorCoords {
     current: Vec2,
     hold_start: Option<Vec2>,
 }
 
-impl CursorWorldCoords {
+impl CursorCoords {
     pub fn is_holding(&self) -> bool {
         self.hold_start.is_some()
     }
@@ -85,7 +85,7 @@ impl CursorWorldCoords {
 }
 
 fn my_cursor_system(
-    mut cursor_coords: ResMut<CursorWorldCoords>,
+    mut cursor_coords: ResMut<CursorCoords>,
     mouse_button_input: Res<Input<MouseButton>>,
     // query to get the window (so we can read the current cursor position)
     q_window: Query<&Window, With<PrimaryWindow>>,

@@ -1,7 +1,7 @@
 use crate::item::ItemCounterResource;
 use crate::prelude::*;
-use crate::select::{Selectable, Selected};
-use crate::CursorWorldCoords;
+use crate::select::components::{Selectable, Selected};
+use crate::CursorCoords;
 use bevy::render::primitives::Aabb;
 
 pub struct DragAndDropPlugin;
@@ -22,7 +22,7 @@ impl Plugin for DragAndDropPlugin {
 fn hold_entities(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
-    cursor_coords: ResMut<CursorWorldCoords>,
+    cursor_coords: ResMut<CursorCoords>,
     mut item_counter: ResMut<ItemCounterResource>,
     selectable_query: Query<(Entity, &GlobalTransform, &Aabb), With<Selectable>>,
     mut unselected_query: Query<(Entity, &mut Transform), (With<Selectable>, Without<Selected>)>,
@@ -35,7 +35,9 @@ fn hold_entities(
         for (entity, transform, aabb) in selectable_query.iter() {
             let coords = cursor_coords.current;
             let translation = transform.translation();
-            let is_cursor_over_selectable = is_cursor_over(coords, translation, aabb);
+            let is_cursor_over_selectable =
+                Rect::from_center_half_size(translation.xy(), aabb.half_extents.xy())
+                    .contains(coords);
 
             if is_cursor_over_selectable {
                 if let Some((_, top_translation)) = topmost {
@@ -66,7 +68,7 @@ fn hold_entities(
 
 fn release_held_entities(
     mouse_button_input: Res<Input<MouseButton>>,
-    mut cursor_coords: ResMut<CursorWorldCoords>,
+    mut cursor_coords: ResMut<CursorCoords>,
     mut selected_query: Query<(&mut Selected, &GlobalTransform)>,
 ) {
     if mouse_button_input.just_released(MouseButton::Left) {
@@ -78,7 +80,7 @@ fn release_held_entities(
 }
 
 fn move_held_entities(
-    cursor_coords: Res<CursorWorldCoords>,
+    cursor_coords: Res<CursorCoords>,
     mouse_button_input: Res<Input<MouseButton>>,
     mut selected_query: Query<(&Selected, &mut Transform)>,
 ) {
@@ -90,14 +92,4 @@ fn move_held_entities(
                 (selected.start_position + distance).extend(transform.translation.z);
         }
     }
-}
-
-pub fn is_cursor_over(coords: Vec2, translation: Vec3, aabb: &Aabb) -> bool {
-    let half_width = aabb.half_extents.x;
-    let half_height = aabb.half_extents.y;
-
-    let x_range = translation.x - half_width..translation.x + half_width;
-    let y_range = translation.y - half_height..translation.y + half_height;
-
-    x_range.contains(&coords.x) && y_range.contains(&coords.y)
 }

@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use crate::{events::ResizeEvent, item::ItemCounterResource, CursorWorldCoords};
+use crate::{events::ResizeEvent, item::ItemCounterResource, CursorCoords};
 use bevy::diagnostic::{
     DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
 };
@@ -164,7 +164,7 @@ fn frame_time(
 }
 
 fn cursor_position(
-    cursor_coords: Res<CursorWorldCoords>,
+    cursor_coords: Res<CursorCoords>,
     mut query: Query<&mut Text, With<CursorText>>,
 ) {
     for mut text in &mut query {
@@ -176,7 +176,7 @@ fn cursor_position(
     }
 }
 
-fn hold_info(cursor_coords: Res<CursorWorldCoords>, mut query: Query<&mut Text, With<HoldText>>) {
+fn hold_info(cursor_coords: Res<CursorCoords>, mut query: Query<&mut Text, With<HoldText>>) {
     for mut text in &mut query {
         // Update the value of the second section
         if let Some(start_position) = cursor_coords.hold_start {
@@ -188,7 +188,7 @@ fn hold_info(cursor_coords: Res<CursorWorldCoords>, mut query: Query<&mut Text, 
 }
 
 fn hold_distance(
-    cursor_coords: Res<CursorWorldCoords>,
+    cursor_coords: Res<CursorCoords>,
     mut query: Query<&mut Text, With<HoldDistanceText>>,
 ) {
     for mut text in &mut query {

@@ -1,10 +1,17 @@
 #![allow(clippy::type_complexity)]
-use bevy::render::primitives::Aabb;
-use bevy_inspector_egui::egui::epaint::text::cursor;
-
-use crate::hold::is_cursor_over;
 use crate::prelude::*;
-use crate::CursorWorldCoords;
+use crate::CursorCoords;
+use bevy::render::primitives::Aabb;
+
+use self::components::Selectable;
+use self::components::Selected;
+use self::components::SelectedRect;
+use self::components::SelectionBox;
+use self::utils::get_anchor;
+use self::utils::get_surrounding_rect;
+
+pub mod components;
+mod utils;
 
 const MAX_Z: f32 = 999.0;
 const SELECT_BOX_COLOR: Color = Palette::BLUE_400;
@@ -20,9 +27,9 @@ impl Plugin for SelectPlugin {
             Update,
             (
                 create_selected_rect,
-                update_selected_box,
-                remove_selected_box,
-                move_selected_entities.after(update_selected_box),
+                update_selected_rect,
+                remove_selected_rect,
+                move_selected_entities.after(update_selected_rect),
                 start_selection_box,
                 size_selection_box,
                 end_selection_box.after(size_selection_box),
@@ -31,38 +38,9 @@ impl Plugin for SelectPlugin {
     }
 }
 
-#[derive(Component)]
-pub struct SelectionBox {
-    pub start: Vec2,
-    pub end: Option<Vec2>,
-}
-
-#[derive(Component)]
-pub struct Selectable;
-
-#[derive(Component, Default)]
-pub struct SelectedRect {
-    rect: Rect,
-    initial_rect: Rect,
-}
-
-impl SelectedRect {
-    fn new(rect: Rect) -> Self {
-        Self {
-            rect,
-            initial_rect: rect,
-        }
-    }
-}
-
-#[derive(Component)]
-pub struct Selected {
-    pub start_position: Vec2,
-}
-
 fn size_selection_box(
     mut commands: Commands,
-    cursor_coords: Res<CursorWorldCoords>,
+    cursor_coords: Res<CursorCoords>,
     selectable_query: Query<(Entity, &GlobalTransform, &Aabb), With<Selectable>>,
     mut selection_box_query: Query<
         (Entity, &SelectionBox),
@@ -70,7 +48,7 @@ fn size_selection_box(
     >,
 ) {
     if let Ok((entity, selection_box)) = selection_box_query.get_single_mut() {
-        let distance = cursor_coords.current - selection_box.start;
+        let distance = cursor_coords.hold_distance();
         let path = GeometryBuilder::build_as(&shapes::Rectangle {
             extents: distance.abs(),
             origin: get_anchor(distance),
@@ -81,29 +59,19 @@ fn size_selection_box(
 
         let start = selection_box.start;
         let end = cursor_coords.current;
+        let selection_rect = Rect::from_corners(start, end);
 
-        let selection_top_left = Vec2::new(start.x.min(end.x), start.y.max(end.y));
-        let selection_bottom_right = Vec2::new(start.x.max(end.x), start.y.min(end.y));
-
-        selectable_query.for_each(|(en, transform, aabb)| {
-            // check if the entity is within the selection box
+        selectable_query.for_each(|(selectable_entity, transform, aabb)| {
             let translation = transform.translation();
-            let min_x = translation.x - aabb.half_extents.x;
-            let max_x = translation.x + aabb.half_extents.x;
-            let min_y = translation.y - aabb.half_extents.y;
-            let max_y = translation.y + aabb.half_extents.y;
+            let selectable_rect =
+                Rect::from_center_half_size(translation.xy(), aabb.half_extents.xy());
 
-            let is_within_selection_box = max_x >= selection_top_left.x
-                && selection_bottom_right.x >= min_x
-                && max_y >= selection_bottom_right.y
-                && selection_top_left.y >= min_y;
-
-            if is_within_selection_box {
-                commands.entity(en).insert(Selected {
+            if !selection_rect.intersect(selectable_rect).is_empty() {
+                commands.entity(selectable_entity).insert(Selected {
                     start_position: translation.xy(),
                 });
             } else {
-                commands.entity(en).remove::<Selected>();
+                commands.entity(selectable_entity).remove::<Selected>();
             }
         });
     }
@@ -114,21 +82,21 @@ fn start_selection_box(
     mouse_button_input: Res<Input<MouseButton>>,
     selectable_query: Query<(&GlobalTransform, &Aabb), With<Selectable>>,
     selected_rect_query: Query<&SelectedRect>,
-    cursor_coords: Res<CursorWorldCoords>,
+    cursor_coords: Res<CursorCoords>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let coords = cursor_coords.current;
 
         if let Ok(selected_rect) = selected_rect_query.get_single() {
-            if selected_rect.rect.contains(coords) {
+            if selected_rect.contains(coords) {
                 return;
             }
         }
 
-        if selectable_query
-            .iter()
-            .any(|(transform, aabb)| is_cursor_over(coords, transform.translation(), aabb))
-        {
+        if selectable_query.iter().any(|(transform, aabb)| {
+            Rect::from_center_size(transform.translation().xy(), aabb.half_extents.xy())
+                .contains(coords)
+        }) {
             return;
         }
 
@@ -196,7 +164,7 @@ fn create_selected_rect(
     }
 }
 
-fn update_selected_box(
+fn update_selected_rect(
     mut commands: Commands,
     new_selected_query: Query<Entity, Added<Selected>>,
     selected_query: Query<(&GlobalTransform, &Aabb), With<Selected>>,
@@ -207,10 +175,10 @@ fn update_selected_box(
         return;
     };
 
-    if let Ok((entity, mut selected_box, mut transform)) = selected_rect_query.get_single_mut() {
+    if let Ok((entity, mut selected_rect, mut transform)) = selected_rect_query.get_single_mut() {
         if let Some(rect) = get_surrounding_rect(selected_query.iter().collect::<Vec<_>>()) {
-            selected_box.rect = rect;
-            selected_box.initial_rect = rect;
+            selected_rect.update(rect);
+            selected_rect.commit();
             let path = GeometryBuilder::build_as(&shapes::Rectangle {
                 extents: Vec2::new(rect.width(), rect.height()),
                 origin: shapes::RectangleOrigin::Center,
@@ -224,7 +192,7 @@ fn update_selected_box(
     }
 }
 
-fn remove_selected_box(
+fn remove_selected_rect(
     mut commands: Commands,
     selected_query: Query<Entity, With<Selected>>,
     mut selected_rect_query: Query<Entity, With<SelectedRect>>,
@@ -237,7 +205,7 @@ fn remove_selected_box(
 }
 
 fn move_selected_entities(
-    cursor_coords: Res<CursorWorldCoords>,
+    cursor_coords: Res<CursorCoords>,
     mouse_button_input: Res<Input<MouseButton>>,
     mut selected_rect_query: Query<(&mut SelectedRect, &mut Transform)>,
     selection_box_query: Query<&SelectionBox>,
@@ -246,15 +214,12 @@ fn move_selected_entities(
     if mouse_button_input.pressed(MouseButton::Left) && selection_box_query.is_empty() {
         if let Ok((mut selected_rect, mut transform)) = selected_rect_query.get_single_mut() {
             if let Some(hold_start) = cursor_coords.hold_start {
-                if selected_rect.initial_rect.contains(hold_start) {
+                if selected_rect.initial_rect().contains(hold_start) {
                     let distance = cursor_coords.hold_distance();
-                    let start = selected_rect.initial_rect.center();
+                    let start = selected_rect.initial_point();
 
                     transform.translation = (start + distance).extend(transform.translation.z);
-                    selected_rect.rect = Rect::from_center_size(
-                        transform.translation.xy(),
-                        selected_rect.rect.size(),
-                    );
+                    selected_rect.move_to(transform.translation.xy());
                 }
             }
         }
@@ -262,29 +227,7 @@ fn move_selected_entities(
 
     if mouse_button_input.just_released(MouseButton::Left) {
         if let Ok((mut selected_rect, _)) = selected_rect_query.get_single_mut() {
-            selected_rect.initial_rect = selected_rect.rect;
+            selected_rect.commit();
         }
     }
-}
-
-fn get_anchor(position: Vec2) -> shapes::RectangleOrigin {
-    match (position.x, position.y) {
-        (x, y) if x > 0.0 && y > 0.0 => shapes::RectangleOrigin::BottomLeft,
-        (x, y) if x < 0.0 && y > 0.0 => shapes::RectangleOrigin::BottomRight,
-        (x, y) if x > 0.0 && y < 0.0 => shapes::RectangleOrigin::TopLeft,
-        (x, y) if x < 0.0 && y < 0.0 => shapes::RectangleOrigin::TopRight,
-        _ => shapes::RectangleOrigin::Center,
-    }
-}
-
-fn get_surrounding_rect(query: Vec<(&GlobalTransform, &Aabb)>) -> Option<Rect> {
-    let mut rect_option: Option<Rect> = None;
-    for (transform, aabb) in query {
-        let rect =
-            Rect::from_center_half_size(transform.translation().xy(), aabb.half_extents.xy());
-
-        rect_option = Some(rect_option.map_or(rect, |r| r.union(rect)));
-    }
-
-    rect_option
 }

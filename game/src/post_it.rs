@@ -1,8 +1,8 @@
-use crate::{prelude::*, select::Selected};
+use crate::{prelude::*, select::components::Selected};
 use bevy::text::{BreakLineOn, Text2dBounds};
 use rand::seq::SliceRandom;
 
-use crate::{events::AddPostItEvent, item::Item, select::Selectable};
+use crate::{events::AddPostItEvent, item::Item, select::components::Selectable};
 
 const POST_IT_COLORS: [Color; 6] = [
     Palette::AMBER_200,
