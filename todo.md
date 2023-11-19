@@ -11,4 +11,3 @@
 - feat: rich text
   - look into bevy_cosmic_edit
 - use .get_single() in a match for handling single item selected vs multiple
-- !refactor: use center origin whenever possible

@@ -37,7 +37,7 @@ fn increment_item_counter(
     selection_box_query: Query<&SelectionBox>,
 ) {
     let selected_count = selected_query.iter().count();
-    for (entity, mut transform) in query.iter_mut() {
+    for (entity, mut transform) in &mut query {
         let is_selected = selected_query.get(entity).is_ok();
         let is_selecting = !selection_box_query.is_empty();
 

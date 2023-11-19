@@ -228,7 +228,7 @@ fn move_selected_entities(
         if let Ok((mut selected_rect, _)) = selected_rect_query.get_single_mut() {
             selected_rect.commit();
 
-            for (mut selected, transform) in selected_query.iter_mut() {
+            for (mut selected, transform) in &mut selected_query {
                 selected.start_position = transform.translation.xy();
             }
         }
@@ -247,7 +247,7 @@ fn move_selected_entities(
                     selected_rect.move_to(transform.translation.xy());
                 }
 
-                for (selected, mut transform) in selected_query.iter_mut() {
+                for (selected, mut transform) in &mut selected_query {
                     let distance = cursor_coords.hold_distance();
                     let start = selected.start_position;
 
@@ -271,7 +271,7 @@ fn select_entities(
         let mut topmost_entity: Option<(Entity, Vec3)> = None;
         // If this gets more complex, look into this package:
         // https://github.com/aevyrie/bevy_mod_picking/issues/7
-        for (entity, global_transform, aabb) in selectable_query.iter() {
+        for (entity, global_transform, aabb) in &selectable_query {
             let translation = global_transform.translation();
             let is_cursor_over_selectable =
                 Rect::from_center_half_size(translation.xy(), aabb.half_extents.xy())
