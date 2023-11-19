@@ -34,8 +34,23 @@ impl Plugin for SelectPlugin {
                 start_selection_box,
                 size_selection_box,
                 end_selection_box.after(size_selection_box),
+                clear_selection,
             ),
         );
+    }
+}
+
+fn clear_selection(
+    mut commands: Commands,
+    selectable_query: Query<Entity, Added<Selectable>>,
+    mut selected_query: Query<Entity, With<Selected>>,
+) {
+    if selectable_query.is_empty() || selected_query.is_empty() {
+        return;
+    };
+
+    for entity in selected_query.iter_mut() {
+        commands.entity(entity).remove::<Selected>();
     }
 }
 
