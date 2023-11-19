@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 #[derive(Component)]
-pub(super) struct SelectionBox {
+pub(crate) struct SelectionBox {
     pub start: Vec2,
 }
 
