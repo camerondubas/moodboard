@@ -1,14 +1,12 @@
 #![allow(clippy::type_complexity)]
+use crate::canvas::CursorCoords;
 use crate::prelude::*;
-use crate::CursorCoords;
 use bevy::render::primitives::Aabb;
 
-use self::components::Selectable;
-use self::components::Selected;
-use self::components::SelectedRect;
-use self::components::SelectionBox;
-use self::utils::get_anchor;
-use self::utils::get_surrounding_rect;
+use self::{
+    components::{Selectable, Selected, SelectedRect, SelectionBox},
+    utils::{get_anchor, get_surrounding_rect},
+};
 
 pub mod components;
 mod utils;

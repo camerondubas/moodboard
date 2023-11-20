@@ -1,8 +1,12 @@
-use crate::{prelude::*, select::components::Selected};
 use bevy::text::{BreakLineOn, Text2dBounds};
 use rand::seq::SliceRandom;
 
-use crate::{events::AddPostItEvent, item::Item, select::components::Selectable};
+use crate::{
+    events::AddPostItEvent,
+    item::Item,
+    prelude::*,
+    select::components::{Selectable, Selected},
+};
 
 const POST_IT_COLORS: [Color; 6] = [
     Palette::AMBER_200,
@@ -44,42 +48,42 @@ fn draw_initial_post_its(mut commands: Commands) {
 
     draw_post_it(
         &mut commands,
-        Vec3::new(-900., 300., 0.0),
+        Vec3::new(-600., 300., 0.0),
         Palette::AMBER_200,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        Vec3::new(-300., 300., 0.0),
+        Vec3::new(0., 300., 0.0),
         Palette::GREEN_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        Vec3::new(300., 300., 0.0),
+        Vec3::new(600., 300., 0.0),
         Palette::PURPLE_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        Vec3::new(-900., -300., 0.0),
+        Vec3::new(-600., -300., 0.0),
         Palette::BLUE_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        Vec3::new(-300., -300., 0.0),
+        Vec3::new(0., -300., 0.0),
         Palette::PINK_300,
         text,
     );
 
     draw_post_it(
         &mut commands,
-        Vec3::new(300., -300., 0.0),
+        Vec3::new(600., -300., 0.0),
         Palette::SLATE_400,
         text,
     );

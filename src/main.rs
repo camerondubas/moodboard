@@ -2,6 +2,7 @@ mod app;
 mod button;
 mod control_panel;
 mod icons;
+mod message_box;
 mod moodboard;
 
 use app::App;

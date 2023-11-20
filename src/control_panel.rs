@@ -1,25 +1,21 @@
 use leptos::*;
 
 use game::{
-    events::{AddPostItEvent, CounterEvent, InputEvent, ThemeEvent, TxInputEvent},
+    events::{AddPostItEvent, InputEvent, ThemeEvent, TxInputEvent},
     theme::Theme,
 };
 
 use crate::{
     button::{Button, IconButton},
-    icons::{IconArrowDown, IconArrowUp, IconMoon, IconPlus, IconStyle},
+    icons::{IconMoon, IconPlus, IconStyle},
 };
 
 #[component]
 pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
-    let (count, set_count) = create_signal(0);
     let theme = expect_context::<ReadSignal<Theme>>();
     let set_theme = expect_context::<WriteSignal<Theme>>();
 
-    let increment = move |_| set_count.update(|x| *x += 1);
-    let decrement = move |_| set_count.update(|x| *x -= 1);
     let evt_clone = events.clone();
-    let evt_clone2 = events.clone();
 
     let add_post_it = move |_| {
         events
@@ -43,12 +39,6 @@ pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
     };
 
     create_effect(move |_| {
-        evt_clone2
-            .send(InputEvent::Counter(CounterEvent { value: count.get() }))
-            .expect("could not send event");
-    });
-
-    create_effect(move |_| {
         evt_clone
             .send(InputEvent::Theme(ThemeEvent { theme: theme.get() }))
             .expect("could not send event");
@@ -60,14 +50,6 @@ pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
 
                 <IconButton on:click=add_post_it>
                     <IconPlus />
-                </IconButton>
-
-                <IconButton on:click=increment>
-                    <IconArrowUp />
-                </IconButton>
-
-                <IconButton on:click=decrement>
-                    <IconArrowDown />
                 </IconButton>
 
                 <Button on:click=move |_| {}>

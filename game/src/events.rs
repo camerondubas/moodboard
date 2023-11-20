@@ -13,15 +13,9 @@ pub type Shared<T> = Arc<Mutex<T>>;
 
 #[derive(Debug)]
 pub enum InputEvent {
-    Counter(CounterEvent),
     Theme(ThemeEvent),
     Resize(ResizeEvent),
     AddPostIt(AddPostItEvent),
-}
-
-#[derive(Clone, Debug, Event)]
-pub struct CounterEvent {
-    pub value: i32,
 }
 
 #[derive(Clone, Debug, Event)]
@@ -95,7 +89,6 @@ impl Plugin for DuplexEventsPlugin {
 
         app.insert_resource(rx_input_event)
             .insert_resource(tx_output_event)
-            .init_resource::<Events<CounterEvent>>()
             .init_resource::<Events<ThemeEvent>>()
             .init_resource::<Events<ResizeEvent>>()
             .init_resource::<Events<AddPostItEvent>>()
@@ -105,16 +98,12 @@ impl Plugin for DuplexEventsPlugin {
 
 fn input_events_system(
     rx_input_event: Res<RxInputEvent>,
-    mut counter_event_writer: EventWriter<CounterEvent>,
     mut theme_event_writer: EventWriter<ThemeEvent>,
     mut resize_event_writer: EventWriter<ResizeEvent>,
     mut add_post_it_event_writer: EventWriter<AddPostItEvent>,
 ) {
     for input_event in rx_input_event.try_iter() {
         match input_event {
-            InputEvent::Counter(event) => {
-                counter_event_writer.send(event);
-            }
             InputEvent::Theme(event) => {
                 theme_event_writer.send(event);
             }

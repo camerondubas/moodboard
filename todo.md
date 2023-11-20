@@ -9,5 +9,6 @@
 - feat: "add image"
 - feat: "add color swatch"
 - feat: rich text
+- feat: delete item
   - look into bevy_cosmic_edit
 - use .get_single() in a match for handling single item selected vs multiple
