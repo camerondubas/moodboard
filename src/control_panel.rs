@@ -2,7 +2,7 @@ use leptos::*;
 
 use game::{
     events::{AddPostItEvent, InputEvent, ThemeEvent, TxInputEvent},
-    theme::Theme,
+    theme::ThemeMode,
 };
 
 use crate::{
@@ -12,8 +12,8 @@ use crate::{
 
 #[component]
 pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
-    let theme = expect_context::<ReadSignal<Theme>>();
-    let set_theme = expect_context::<WriteSignal<Theme>>();
+    let theme = expect_context::<ReadSignal<ThemeMode>>();
+    let set_theme = expect_context::<WriteSignal<ThemeMode>>();
 
     let evt_clone = events.clone();
 
@@ -28,14 +28,14 @@ pub fn ControlPanel(events: TxInputEvent) -> impl IntoView {
 
     let toggle_theme = move |_| {
         set_theme.set(match theme() {
-            Theme::Light => Theme::Dark,
-            Theme::Dark => Theme::Light,
+            ThemeMode::Light => ThemeMode::Dark,
+            ThemeMode::Dark => ThemeMode::Light,
         })
     };
 
     let icon = move || match theme.get() {
-        Theme::Light => IconStyle::Outline,
-        Theme::Dark => IconStyle::Solid,
+        ThemeMode::Light => IconStyle::Outline,
+        ThemeMode::Dark => IconStyle::Solid,
     };
 
     create_effect(move |_| {

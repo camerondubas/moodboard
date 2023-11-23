@@ -8,7 +8,7 @@ mod moodboard;
 use app::App;
 use game::{
     events::{DuplexEventsPlugin, SharedState},
-    theme::Theme,
+    theme::ThemeMode,
 };
 use leptos::*;
 use leptos_meta::Html;
@@ -24,12 +24,12 @@ fn main() {
     }));
     let ((tx_events, _rx_events), duplex_events_plugin) = DuplexEventsPlugin::create();
 
-    let theme_signal = create_signal(Theme::Light);
+    let theme_signal = create_signal(ThemeMode::Light);
     let (theme, set_theme) = theme_signal;
 
     let theme_class = move || match theme.get() {
-        Theme::Dark => "dark",
-        Theme::Light => "",
+        ThemeMode::Dark => "dark",
+        ThemeMode::Light => "",
     };
 
     provide_context(theme);

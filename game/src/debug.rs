@@ -1,5 +1,10 @@
 use crate::{
-    canvas::CursorCoords, events::ResizeEvent, item::ItemCounter, prelude::*, SharedResource,
+    canvas::CursorCoords,
+    events::ResizeEvent,
+    item::ItemCounter,
+    prelude::*,
+    theme::{Theme, ThemeDidChange},
+    SharedResource,
 };
 use bevy::diagnostic::{
     DiagnosticsStore, FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin,
@@ -26,10 +31,14 @@ impl Plugin for DebugPlugin {
                 item_counter,
                 hold_info,
                 hold_distance,
+                on_theme_change,
             ),
         );
     }
 }
+
+#[derive(Component)]
+struct DebugText;
 
 #[derive(Component)]
 struct CursorText;
@@ -57,12 +66,13 @@ fn display_debug(
     window_query: Query<&Window>,
     _asset_server: Res<AssetServer>,
     shared_resource: Res<SharedResource>,
+    theme: Res<Theme>,
 ) {
     let font_size = 16.0;
     let text_style = TextStyle {
         font_size,
         // font: asset_server.load("fonts/font.ttf"),
-        color: Color::BLACK,
+        color: theme.debug_text_color,
         ..Default::default()
     };
     let window = window_query.single();
@@ -84,16 +94,17 @@ fn display_debug(
         })
         .with_children(|parent| {
             let name = shared_resource.0.lock().unwrap().name.clone();
-            parent.spawn(TextBundle::from_sections([TextSection::new(
-                name,
-                text_style.clone(),
-            )]));
+            parent.spawn((
+                TextBundle::from_sections([TextSection::new(name, text_style.clone())]),
+                DebugText,
+            ));
             parent.spawn((
                 TextBundle::from_sections([
                     TextSection::new("FPS: ", text_style.clone()),
                     TextSection::new("0", text_style.clone()),
                 ]),
                 FpsText,
+                DebugText,
             ));
 
             parent.spawn((
@@ -102,6 +113,7 @@ fn display_debug(
                     TextSection::new("0", text_style.clone()),
                 ]),
                 FrameTimeText,
+                DebugText,
             ));
 
             parent.spawn((
@@ -110,6 +122,7 @@ fn display_debug(
                     TextSection::new("0, 0", text_style.clone()),
                 ]),
                 CursorText,
+                DebugText,
             ));
             parent.spawn((
                 TextBundle::from_sections([
@@ -117,6 +130,7 @@ fn display_debug(
                     TextSection::new("0", text_style.clone()),
                 ]),
                 ItemCounterText,
+                DebugText,
             ));
 
             parent.spawn((
@@ -125,6 +139,7 @@ fn display_debug(
                     TextSection::new(format!("{:.0} x {:.0}", width, height), text_style.clone()),
                 ]),
                 ResolutionText,
+                DebugText,
             ));
 
             parent.spawn((
@@ -133,6 +148,7 @@ fn display_debug(
                     TextSection::new("?", text_style.clone()),
                 ]),
                 HoldText,
+                DebugText,
             ));
 
             parent.spawn((
@@ -141,6 +157,7 @@ fn display_debug(
                     TextSection::new("?", text_style.clone()),
                 ]),
                 HoldDistanceText,
+                DebugText,
             ));
         });
 }
@@ -226,6 +243,19 @@ fn on_window_resize(
     for event in resize_event_reader.read() {
         for mut text in &mut query {
             text.sections[1].value = format!("{:.0} x {:.0}", event.width, event.height);
+        }
+    }
+}
+
+fn on_theme_change(
+    mut theme_did_change_reader: EventReader<ThemeDidChange>,
+    mut text_query: Query<&mut Text, With<DebugText>>,
+) {
+    for event in theme_did_change_reader.read() {
+        for mut text in &mut text_query {
+            for section in &mut text.sections {
+                section.style.color = event.theme.debug_text_color;
+            }
         }
     }
 }

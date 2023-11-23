@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use std::sync::{Arc, Mutex};
 
-use crate::theme::Theme;
+use crate::theme::ThemeMode;
 
 #[derive(Debug)]
 pub struct SharedState {
@@ -20,7 +20,7 @@ pub enum InputEvent {
 
 #[derive(Clone, Debug, Event)]
 pub struct ThemeEvent {
-    pub theme: Theme,
+    pub theme: ThemeMode,
 }
 
 #[derive(Clone, Debug, Event)]
