@@ -1,5 +1,6 @@
 mod camera;
 mod canvas;
+mod color_swatch;
 #[cfg(any(feature = "debug", rust_analyzer))]
 mod debug;
 pub mod events;
@@ -18,6 +19,7 @@ use bevy::{
 use camera::CameraPlugin;
 use canvas::CanvasPlugin;
 
+use color_swatch::ColorSwatchPlugin;
 #[cfg(any(feature = "debug", rust_analyzer))]
 use debug::DebugPlugin;
 use events::{Shared, SharedState};
@@ -52,6 +54,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             UiPlugin,
             ShapePlugin,
             PostItPlugin,
+            ColorSwatchPlugin,
             ItemPlugin,
             SelectPlugin,
         ))

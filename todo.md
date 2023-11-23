@@ -6,11 +6,11 @@
 - feat(events): add an output event system to send events to the leptos web app.
   - handle text properly.
 - refactor(events): Set up some more general events for message passing
-- refactor: Theming component that takes both light and dark mode styles
-  - single system that tells everything with the theming component to update styles
+- ~~refactor: Theming component that takes both light and dark mode styles~~
+  - ~~single system that tells everything with the theming component to update styles~~
 - feat: "add text object"
 - feat: "add image"
-- feat: "add color swatch"
+- ~~feat: "add color swatch"~~
 - feat: delete item
 - feat: edit text
 - feat: rich text
@@ -19,6 +19,7 @@
 - feat: remember theme
 - refactor: Bundle for "item"
   - rename to something more moodboard-y?
+- fix: drag and drop is buggy when not on center of item?
 
 ### Low Priority
 - feat: Name a board

@@ -36,6 +36,8 @@ pub(crate) struct Theme {
     pub post_it_shadow_color: Color,
     pub post_it_text_color: Color,
     pub debug_text_color: Color,
+    pub color_swatch_text_color: Color,
+    pub color_swatch_bg_color: Color,
 }
 
 fn create_theme(mode: ThemeMode) -> Theme {
@@ -54,6 +56,8 @@ fn create_theme(mode: ThemeMode) -> Theme {
             post_it_shadow_color: Palette::GRAY_600.with_a(0.6),
             post_it_text_color: Palette::GRAY_700.with_a(0.8),
             debug_text_color: Palette::BLACK,
+            color_swatch_text_color: Palette::GRAY_700.with_a(0.8),
+            color_swatch_bg_color: Palette::SLATE_100,
         },
         ThemeMode::Dark => Theme {
             window_bg_color: Palette::SLATE_900,
@@ -69,6 +73,8 @@ fn create_theme(mode: ThemeMode) -> Theme {
             post_it_shadow_color: Palette::GRAY_600.with_a(0.9),
             post_it_text_color: Palette::GRAY_200.with_a(0.8),
             debug_text_color: Palette::WHITE,
+            color_swatch_text_color: Palette::GRAY_200.with_a(0.8),
+            color_swatch_bg_color: Palette::SLATE_700,
         },
     }
 }
