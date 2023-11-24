@@ -108,7 +108,7 @@ fn start_selection_box(
         }
 
         if selectable_query.iter().any(|(transform, aabb)| {
-            Rect::from_center_size(transform.translation().xy(), aabb.half_extents.xy())
+            Rect::from_center_half_size(transform.translation().xy(), aabb.half_extents.xy())
                 .contains(coords)
         }) {
             return;
