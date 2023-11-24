@@ -29,10 +29,6 @@ jobs:
       - name: Build Release
         run: |
           trunk build --release --public-url "${GITHUB_REPOSITORY#*/}"
-      - name: optimize Wasm
-        uses: NiklasEi/wasm-opt-action@v2
-        with:
-          file: dist/*.wasm
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
