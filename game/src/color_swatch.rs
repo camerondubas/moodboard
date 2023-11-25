@@ -1,7 +1,7 @@
 use bevy::text::{BreakLineOn, Text2dBounds};
 
 use crate::{
-    item::Item,
+    item::{Item, ItemBundle},
     post_it::PostItShadow,
     prelude::*,
     select::components::Selectable,
@@ -60,18 +60,18 @@ fn spawn_swatch(commands: &mut Commands, theme: &Res<Theme>, position: Vec3, col
 
     commands
         .spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&shapes::Rectangle {
-                    extents: SWATCH_SIZE,
+            ItemBundle {
+                stroke: Stroke::new(theme.post_it_stroke_color, SWATCH_STROKE_WIDTH),
+                shape: ShapeBundle {
+                    path: GeometryBuilder::build_as(&shapes::Rectangle {
+                        extents: SWATCH_SIZE,
+                        ..Default::default()
+                    }),
+                    spatial: SpatialBundle::from_transform(Transform::from_translation(position)),
                     ..Default::default()
-                }),
-                spatial: SpatialBundle::from_transform(Transform::from_translation(position)),
+                },
                 ..Default::default()
             },
-            Stroke::new(theme.post_it_stroke_color, SWATCH_STROKE_WIDTH),
-            Fill::color(Palette::WHITE),
-            Selectable,
-            Item,
             ColorSwatch,
             Name::new("Swatch"),
         ))

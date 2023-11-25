@@ -1,7 +1,7 @@
 #![allow(clippy::type_complexity)]
 use crate::{
     prelude::*,
-    select::components::{Selected, SelectionBox},
+    select::components::{Selectable, Selected, SelectionBox},
 };
 pub struct ItemPlugin;
 
@@ -24,6 +24,29 @@ impl ItemCounter {
 
     fn increment(&mut self) {
         self.count += 1.0;
+    }
+}
+
+#[derive(Bundle)]
+pub struct ItemBundle {
+    pub item: Item,
+    pub selectable: Selectable,
+    pub fill: Fill,
+    pub stroke: Stroke,
+    pub shape: ShapeBundle,
+}
+
+impl Default for ItemBundle {
+    fn default() -> Self {
+        Self {
+            item: Item,
+            selectable: Selectable,
+            fill: Fill::color(Palette::WHITE),
+            stroke: Stroke::new(Palette::BLACK.with_a(0.), 0.),
+            shape: ShapeBundle {
+                ..Default::default()
+            },
+        }
     }
 }
 

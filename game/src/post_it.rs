@@ -3,7 +3,7 @@ use rand::seq::SliceRandom;
 
 use crate::{
     events::AddPostItEvent,
-    item::Item,
+    item::{Item, ItemBundle},
     prelude::*,
     select::components::{Selectable, Selected},
     theme::{Theme, ThemeDidChange},
@@ -138,18 +138,19 @@ fn draw_post_it(commands: &mut Commands, theme: &Theme, position: Vec3, color: C
 
     commands
         .spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&shapes::Rectangle {
-                    extents: POST_IT_SIZE,
+            ItemBundle {
+                fill: Fill::color(color),
+                stroke: Stroke::new(theme.post_it_stroke_color, POST_IT_STROKE_WIDTH),
+                shape: ShapeBundle {
+                    path: GeometryBuilder::build_as(&shapes::Rectangle {
+                        extents: POST_IT_SIZE,
+                        ..Default::default()
+                    }),
+                    spatial: SpatialBundle::from_transform(Transform::from_translation(position)),
                     ..Default::default()
-                }),
-                spatial: SpatialBundle::from_transform(Transform::from_translation(position)),
+                },
                 ..Default::default()
             },
-            Stroke::new(theme.post_it_stroke_color, POST_IT_STROKE_WIDTH),
-            Fill::color(color),
-            Selectable,
-            Item,
             PostIt,
             Name::new("Post-it Note"),
         ))
