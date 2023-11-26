@@ -15,7 +15,7 @@ pub type Shared<T> = Arc<Mutex<T>>;
 pub enum InputEvent {
     Theme(ThemeEvent),
     Resize(ResizeEvent),
-    AddPostIt(AddPostItEvent),
+    AddItem(AddItemEvent),
 }
 
 #[derive(Clone, Debug, Event)]
@@ -30,7 +30,12 @@ pub struct ResizeEvent {
 }
 
 #[derive(Clone, Debug, Event)]
-pub struct AddPostItEvent(pub String);
+pub enum AddItemEvent {
+    Text(String),
+    Image(String),
+    Swatch(String),
+    PostIt(String),
+}
 
 #[derive(Debug)]
 pub enum OutputEvent {
@@ -91,7 +96,7 @@ impl Plugin for DuplexEventsPlugin {
             .insert_resource(tx_output_event)
             .init_resource::<Events<ThemeEvent>>()
             .init_resource::<Events<ResizeEvent>>()
-            .init_resource::<Events<AddPostItEvent>>()
+            .init_resource::<Events<AddItemEvent>>()
             .add_systems(PreUpdate, input_events_system);
     }
 }
@@ -100,7 +105,7 @@ fn input_events_system(
     rx_input_event: Res<RxInputEvent>,
     mut theme_event_writer: EventWriter<ThemeEvent>,
     mut resize_event_writer: EventWriter<ResizeEvent>,
-    mut add_post_it_event_writer: EventWriter<AddPostItEvent>,
+    mut add_item_event_writer: EventWriter<AddItemEvent>,
 ) {
     for input_event in rx_input_event.try_iter() {
         match input_event {
@@ -110,8 +115,9 @@ fn input_events_system(
             InputEvent::Resize(event) => {
                 resize_event_writer.send(event);
             }
-            InputEvent::AddPostIt(event) => {
-                add_post_it_event_writer.send(event);
+
+            InputEvent::AddItem(event) => {
+                add_item_event_writer.send(event);
             }
         }
     }

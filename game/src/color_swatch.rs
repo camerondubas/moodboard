@@ -1,10 +1,10 @@
 use bevy::text::{BreakLineOn, Text2dBounds};
 
 use crate::{
-    item::{Item, ItemBundle},
+    events::AddItemEvent,
+    item::ItemBundle,
     post_it::PostItShadow,
     prelude::*,
-    select::components::Selectable,
     theme::{Theme, ThemeDidChange},
 };
 
@@ -17,7 +17,7 @@ pub struct ColorSwatchPlugin;
 impl Plugin for ColorSwatchPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, draw_initial_swatches)
-            .add_systems(Update, on_theme_change);
+            .add_systems(Update, (add_swatch, on_theme_change));
     }
 }
 
@@ -145,6 +145,15 @@ fn on_theme_change(
 
         for mut text in text_query.iter_mut() {
             text.sections[0].style.color = event.theme.color_swatch_text_color;
+        }
+    }
+}
+
+fn add_swatch(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
+    for event in events.read() {
+        if let AddItemEvent::Swatch(color) = event {
+            let color = Color::hex(color).unwrap();
+            spawn_swatch(&mut commands, &theme, Vec3::new(0., 0., 0.0), color);
         }
     }
 }

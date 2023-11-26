@@ -1,8 +1,7 @@
-use std::ops::{Add, Mul};
-
-use bevy::text::{BreakLineOn, Text2dBounds, TextLayoutInfo};
+use bevy::text::{BreakLineOn, TextLayoutInfo};
 
 use crate::{
+    events::AddItemEvent,
     item::ItemBundle,
     prelude::*,
     theme::{Theme, ThemeDidChange},
@@ -16,7 +15,7 @@ pub struct TextPlugin;
 impl Plugin for TextPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, draw_initial_text)
-            .add_systems(Update, (update_textbox_size, on_theme_change));
+            .add_systems(Update, (update_textbox_size, on_theme_change, add_text));
     }
 }
 
@@ -26,27 +25,16 @@ pub struct CanvasText;
 #[derive(Component)]
 pub struct CanvasTextText;
 
-fn draw_initial_text(
-    mut commands: Commands,
-    theme: Res<Theme>,
-    text_info_query: Query<&TextLayoutInfo>,
-) {
+fn draw_initial_text(mut commands: Commands, theme: Res<Theme>) {
     spawn_text(
         &mut commands,
         &theme,
         Vec3::new(0., 600., 0.0),
         "This is some default Text".into(),
-        text_info_query,
     );
 }
 
-fn spawn_text(
-    commands: &mut Commands,
-    theme: &Res<Theme>,
-    position: Vec3,
-    text: String,
-    text_layout_info_query: Query<&TextLayoutInfo>,
-) {
+fn spawn_text(commands: &mut Commands, theme: &Res<Theme>, position: Vec3, text: String) {
     let text_style = TextStyle {
         font_size: FONT_SIZE,
         color: theme.default_text_color,
@@ -125,6 +113,14 @@ fn on_theme_change(
             for section in text.sections.iter_mut() {
                 section.style = text_style.clone();
             }
+        }
+    }
+}
+
+fn add_text(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
+    for event in events.read() {
+        if let AddItemEvent::Text(value) = event {
+            spawn_text(&mut commands, &theme, Vec3::new(0., 0., 0.0), value.clone());
         }
     }
 }

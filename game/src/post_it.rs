@@ -2,10 +2,10 @@ use bevy::text::{BreakLineOn, Text2dBounds};
 use rand::seq::SliceRandom;
 
 use crate::{
-    events::AddPostItEvent,
-    item::{Item, ItemBundle},
+    events::AddItemEvent,
+    item::ItemBundle,
     prelude::*,
-    select::components::{Selectable, Selected},
+    select::components::Selected,
     theme::{Theme, ThemeDidChange},
 };
 
@@ -90,19 +90,21 @@ fn draw_initial_post_its(mut commands: Commands, theme: Res<Theme>) {
     );
 }
 
-fn add_post_it(mut commands: Commands, mut events: EventReader<AddPostItEvent>, theme: Res<Theme>) {
+fn add_post_it(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
     for event in events.read() {
-        let color = theme
-            .post_it_colors
-            .choose(&mut rand::thread_rng())
-            .unwrap();
-        draw_post_it(
-            &mut commands,
-            &theme,
-            Vec3::new(0., 0., 0.0),
-            *color,
-            event.0.as_str(),
-        );
+        if let AddItemEvent::PostIt(text) = event {
+            let color = theme
+                .post_it_colors
+                .choose(&mut rand::thread_rng())
+                .unwrap();
+            draw_post_it(
+                &mut commands,
+                &theme,
+                Vec3::new(0., 0., 0.0),
+                *color,
+                text.as_str(),
+            );
+        }
     }
 }
 
