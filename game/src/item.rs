@@ -8,7 +8,7 @@ pub struct ItemPlugin;
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ItemCounter>()
-            .add_systems(Update, increment_item_counter);
+            .add_systems(Update, (increment_item_counter, delete_item));
     }
 }
 
@@ -16,6 +16,9 @@ impl Plugin for ItemPlugin {
 pub struct ItemCounter {
     count: f32,
 }
+
+#[derive(Component)]
+pub struct Deletable;
 
 impl ItemCounter {
     pub fn count(&self) -> f32 {
@@ -34,6 +37,7 @@ pub struct ItemBundle {
     pub fill: Fill,
     pub stroke: Stroke,
     pub shape: ShapeBundle,
+    pub deletable: Deletable,
 }
 
 impl Default for ItemBundle {
@@ -41,6 +45,7 @@ impl Default for ItemBundle {
         Self {
             item: Item,
             selectable: Selectable,
+            deletable: Deletable,
             fill: Fill::color(Palette::WHITE),
             stroke: Stroke::new(Palette::BLACK.with_a(0.), 0.),
             shape: ShapeBundle {
@@ -73,5 +78,18 @@ fn increment_item_counter(
 
         item_counter.increment();
         transform.translation.z = item_counter.count();
+    }
+}
+
+fn delete_item(
+    mut commands: Commands,
+    query: Query<(Entity, &Deletable), With<Item>>,
+    selected_query: Query<Entity, With<Selected>>,
+    keys: Res<Input<KeyCode>>,
+) {
+    if keys.just_pressed(KeyCode::Back) {
+        for entity in selected_query.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
     }
 }
