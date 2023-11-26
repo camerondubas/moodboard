@@ -132,7 +132,7 @@ fn remove_select(
 fn draw_post_it(commands: &mut Commands, theme: &Theme, position: Vec3, color: Color, text: &str) {
     let text_style = TextStyle {
         font_size: 32.0,
-        color: theme.post_it_text_color,
+        color: theme.default_text_color,
         ..Default::default()
     };
 
@@ -214,7 +214,7 @@ fn post_it_theme_change(
         }
 
         for mut text in &mut post_it_text_query {
-            text.sections[0].style.color = theme.post_it_text_color;
+            text.sections[0].style.color = theme.default_text_color;
         }
 
         for mut fill in &mut post_it_shadow_query {

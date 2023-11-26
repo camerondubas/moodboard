@@ -8,6 +8,7 @@ mod item;
 mod post_it;
 pub mod prelude;
 mod select;
+mod text;
 pub mod theme;
 mod ui;
 
@@ -27,6 +28,7 @@ use item::ItemPlugin;
 use post_it::PostItPlugin;
 use prelude::*;
 use select::SelectPlugin;
+use text::TextPlugin;
 use theme::ThemePlugin;
 use ui::UiPlugin;
 

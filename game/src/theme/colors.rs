@@ -2,6 +2,7 @@ use bevy::prelude::Color;
 
 pub struct Palette;
 impl Palette {
+    pub const TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.0);
     pub const BLACK: Color = Color::rgb(0.0, 0.0, 0.0);
     pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 

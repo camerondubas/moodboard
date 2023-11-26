@@ -54,7 +54,7 @@ fn spawn_swatch(commands: &mut Commands, theme: &Res<Theme>, position: Vec3, col
 
     let text_style = TextStyle {
         font_size: 32.0,
-        color: theme.post_it_text_color,
+        color: theme.default_text_color,
         ..Default::default()
     };
 
