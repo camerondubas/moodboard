@@ -141,7 +141,7 @@ fn draw_post_it(commands: &mut Commands, theme: &Theme, position: Vec3, color: C
     commands
         .spawn((
             ItemBundle {
-                fill: Fill::color(color),
+                fill: Fill::color(theme.default_bg_color),
                 stroke: Stroke::new(theme.post_it_stroke_color, POST_IT_STROKE_WIDTH),
                 shape: ShapeBundle {
                     path: GeometryBuilder::build_as(&shapes::Rectangle {
@@ -211,8 +211,7 @@ fn post_it_theme_change(
             stroke.color = theme.post_it_stroke_color;
             stroke.options = StrokeOptions::default().with_line_width(POST_IT_STROKE_WIDTH);
 
-            // TODO: Figure out how to change the fill color
-            fill.color = fill.color;
+            fill.color = theme.default_bg_color
         }
 
         for mut text in &mut post_it_text_query {
