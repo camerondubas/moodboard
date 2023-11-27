@@ -8,22 +8,24 @@
 - refactor(events): Set up some more general events for message passing
 - ~~refactor: Theming component that takes both light and dark mode styles~~
   - ~~single system that tells everything with the theming component to update styles~~
-- feat: "add text object"
+- ~~feat: "add text object"~~
 - feat: "add image"
 - ~~feat: "add color swatch"~~
-- feat: delete item
+- ~~feat: delete item~~
 - feat: edit text
 - feat: rich text
   - look into bevy_cosmic_edit
 - refactor: use .get_single() in a match for handling single item selected vs multiple
 - feat: remember theme
-- refactor: Bundle for "item"
-  - rename to something more moodboard-y?
-- fix: drag and drop is buggy when not on center of item?
+- ~~refactor: Bundle for "item"~~
+- ~~fix: drag and drop is buggy when not on center of item?~~
 
 ### Low Priority
 - feat: Name a board
 - feat: Save a board to localstorage
+- chore: create demo/default board
+- chore: create readme
+- chore: update github repo
 
 ### Blocked
 - feat: shader for backdrop
