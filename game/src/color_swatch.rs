@@ -1,4 +1,5 @@
 use bevy::text::{BreakLineOn, Text2dBounds};
+use rand::seq::SliceRandom;
 
 use crate::{
     events::AddItemEvent,
@@ -11,6 +12,30 @@ use crate::{
 const SWATCH_SIZE: Vec2 = Vec2::new(220., 250.);
 const SWATCH_COLOR_SECTION_SIZE: Vec2 = Vec2::new(215., 150.);
 const SWATCH_STROKE_WIDTH: f32 = 5.0;
+const SWATCH_COLORS: [Color; 22] = [
+    Palette::SLATE_500,
+    Palette::GRAY_500,
+    Palette::ZINC_500,
+    Palette::NEUTRAL_500,
+    Palette::STONE_500,
+    Palette::RED_500,
+    Palette::ORANGE_500,
+    Palette::AMBER_500,
+    Palette::YELLOW_500,
+    Palette::LIME_500,
+    Palette::GREEN_500,
+    Palette::EMERALD_500,
+    Palette::TEAL_500,
+    Palette::CYAN_500,
+    Palette::SKY_500,
+    Palette::BLUE_500,
+    Palette::INDIGO_500,
+    Palette::VIOLET_500,
+    Palette::PURPLE_500,
+    Palette::FUCHSIA_500,
+    Palette::PINK_500,
+    Palette::ROSE_500,
+];
 
 pub struct ColorSwatchPlugin;
 
@@ -140,7 +165,7 @@ fn on_theme_change(
 ) {
     for event in theme_event_reader.read() {
         for mut fill in fill_query.iter_mut() {
-            fill.color = event.theme.color_swatch_bg_color;
+            fill.color = event.theme.default_bg_color;
         }
 
         for mut text in text_query.iter_mut() {
@@ -152,7 +177,11 @@ fn on_theme_change(
 fn add_swatch(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
     for event in events.read() {
         if let AddItemEvent::Swatch(color) = event {
-            let color = Color::hex(color).unwrap();
+            // let color = Color::hex(color).unwrap();
+            let color = SWATCH_COLORS
+                .choose(&mut rand::thread_rng())
+                .unwrap()
+                .clone();
             spawn_swatch(&mut commands, &theme, Vec3::new(0., 0., 0.0), color);
         }
     }

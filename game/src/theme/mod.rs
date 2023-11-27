@@ -23,8 +23,6 @@ impl Plugin for ThemePlugin {
 
 #[derive(Event)]
 pub(crate) struct ThemeDidChange {
-    #[allow(dead_code)]
-    pub mode: ThemeMode,
     pub theme: Theme,
 }
 
@@ -37,7 +35,7 @@ pub(crate) struct Theme {
     pub default_text_color: Color,
     pub debug_text_color: Color,
     pub color_swatch_text_color: Color,
-    pub color_swatch_bg_color: Color,
+    pub default_bg_color: Color,
 }
 
 fn create_theme(mode: ThemeMode) -> Theme {
@@ -57,7 +55,7 @@ fn create_theme(mode: ThemeMode) -> Theme {
             default_text_color: Palette::GRAY_700.with_a(0.8),
             debug_text_color: Palette::BLACK,
             color_swatch_text_color: Palette::GRAY_700.with_a(0.8),
-            color_swatch_bg_color: Palette::SLATE_100,
+            default_bg_color: Palette::WHITE,
         },
         ThemeMode::Dark => Theme {
             window_bg_color: Palette::SLATE_900,
@@ -74,7 +72,7 @@ fn create_theme(mode: ThemeMode) -> Theme {
             default_text_color: Palette::GRAY_200.with_a(0.8),
             debug_text_color: Palette::WHITE,
             color_swatch_text_color: Palette::GRAY_200.with_a(0.8),
-            color_swatch_bg_color: Palette::SLATE_700,
+            default_bg_color: Palette::SLATE_600,
         },
     }
 }
@@ -89,7 +87,6 @@ fn on_theme_change(
         *theme = new_theme;
         commands.insert_resource(ClearColor(theme.window_bg_color.clone()));
         theme_did_change_writer.send(ThemeDidChange {
-            mode: event.theme.clone(),
             theme: theme.clone(),
         });
     }
