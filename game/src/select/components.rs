@@ -2,7 +2,18 @@ use crate::prelude::*;
 
 #[derive(Component)]
 pub(crate) struct SelectionBox {
-    pub start: Vec2,
+    pub start_position: Vec2,
+    pub end_position: Vec2,
+}
+
+impl SelectionBox {
+    pub fn update(&mut self, position: Vec2) {
+        self.end_position = position;
+    }
+
+    pub fn rect(&self) -> Rect {
+        Rect::from_corners(self.start_position, self.end_position)
+    }
 }
 
 #[derive(Component)]
@@ -50,4 +61,10 @@ impl SelectedRect {
 #[derive(Component)]
 pub(crate) struct Selected {
     pub start_position: Vec2,
+}
+
+impl Selected {
+    pub fn new(start_position: Vec2) -> Self {
+        Self { start_position }
+    }
 }

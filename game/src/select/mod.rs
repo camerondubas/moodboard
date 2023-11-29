@@ -27,67 +27,14 @@ impl Plugin for SelectPlugin {
                 create_selected_rect,
                 update_selected_rect,
                 select_entities,
-                move_selected_entities.after(update_selected_rect),
+                move_selected_entities.after(select_entities),
                 remove_selected_rect.after(move_selected_entities),
                 start_selection_box,
                 size_selection_box,
                 end_selection_box.after(size_selection_box),
-                clear_selection,
+                clear_selected,
             ),
         );
-    }
-}
-
-fn clear_selection(
-    mut commands: Commands,
-    selectable_query: Query<Entity, Added<Selectable>>,
-    mut selected_query: Query<Entity, With<Selected>>,
-) {
-    if selectable_query.is_empty() || selected_query.is_empty() {
-        return;
-    };
-
-    for entity in selected_query.iter_mut() {
-        commands.entity(entity).remove::<Selected>();
-    }
-}
-
-fn size_selection_box(
-    mut commands: Commands,
-    cursor_coords: Res<CursorCoords>,
-    selectable_query: Query<(Entity, &GlobalTransform, &Aabb), With<Selectable>>,
-    mut selection_box_query: Query<
-        (Entity, &SelectionBox),
-        (With<SelectionBox>, With<Path>, Without<Selectable>),
-    >,
-) {
-    if let Ok((entity, selection_box)) = selection_box_query.get_single_mut() {
-        let distance = cursor_coords.hold_distance();
-        let path = GeometryBuilder::build_as(&shapes::Rectangle {
-            extents: distance.abs(),
-            origin: get_anchor(distance),
-        });
-
-        commands.entity(entity).remove::<Path>();
-        commands.entity(entity).insert(path);
-
-        let start = selection_box.start;
-        let end = cursor_coords.current;
-        let selection_rect = Rect::from_corners(start, end);
-
-        selectable_query.for_each(|(selectable_entity, transform, aabb)| {
-            let translation = transform.translation();
-            let selectable_rect =
-                Rect::from_center_half_size(translation.xy(), aabb.half_extents.xy());
-
-            if !selection_rect.intersect(selectable_rect).is_empty() {
-                commands.entity(selectable_entity).insert(Selected {
-                    start_position: translation.xy(),
-                });
-            } else {
-                commands.entity(selectable_entity).remove::<Selected>();
-            }
-        });
     }
 }
 
@@ -127,9 +74,47 @@ fn start_selection_box(
             },
             Fill::color(SELECT_BOX_COLOR.with_a(0.3)),
             Stroke::new(SELECT_BOX_COLOR, SELECT_BOX_STROKE_WIDTH),
-            SelectionBox { start: coords },
+            SelectionBox {
+                start_position: coords,
+                end_position: coords,
+            },
             Name::new("Selection Box"),
         ));
+    }
+}
+
+fn size_selection_box(
+    mut commands: Commands,
+    cursor_coords: Res<CursorCoords>,
+    selectable_query: Query<(Entity, &GlobalTransform, &Aabb), With<Selectable>>,
+    mut selection_box_query: Query<
+        (&mut SelectionBox, &mut Path),
+        (With<SelectionBox>, With<Path>, Without<Selectable>),
+    >,
+) {
+    if let Ok((mut selection_box, mut path)) = selection_box_query.get_single_mut() {
+        let distance = cursor_coords.hold_distance();
+        *path = GeometryBuilder::build_as(&shapes::Rectangle {
+            extents: distance.abs(),
+            origin: get_anchor(distance),
+        });
+
+        selection_box.update(cursor_coords.current);
+
+        let selection_rect = selection_box.rect();
+
+        selectable_query.for_each(|(selectable_entity, transform, aabb)| {
+            let position = transform.translation().xy();
+            let selectable_rect = Rect::from_center_half_size(position, aabb.half_extents.xy());
+
+            if !selection_rect.intersect(selectable_rect).is_empty() {
+                commands
+                    .entity(selectable_entity)
+                    .insert(Selected::new(position));
+            } else {
+                commands.entity(selectable_entity).remove::<Selected>();
+            }
+        });
     }
 }
 
@@ -179,26 +164,23 @@ fn update_selected_rect(
     mut commands: Commands,
     new_selected_query: Query<Entity, Added<Selected>>,
     selected_query: Query<(&GlobalTransform, &Aabb), With<Selected>>,
-    mut selected_rect_query: Query<(Entity, &mut SelectedRect, &mut Transform)>,
+    mut selected_rect_query: Query<(&mut SelectedRect, &mut Transform, &mut Path)>,
     removed: RemovedComponents<Selected>,
 ) {
     if new_selected_query.is_empty() && removed.is_empty() {
         return;
     };
 
-    if let Ok((entity, mut selected_rect, mut transform)) = selected_rect_query.get_single_mut() {
+    if let Ok((mut selected_rect, mut transform, mut path)) = selected_rect_query.get_single_mut() {
         if let Some(rect) = get_surrounding_rect(selected_query.iter().collect::<Vec<_>>()) {
             selected_rect.update(rect);
             selected_rect.commit();
-            let path = GeometryBuilder::build_as(&shapes::Rectangle {
+
+            transform.translation = rect.center().extend(MAX_Z);
+            *path = GeometryBuilder::build_as(&shapes::Rectangle {
                 extents: Vec2::new(rect.width(), rect.height()),
                 origin: shapes::RectangleOrigin::Center,
             });
-
-            transform.translation = rect.center().extend(MAX_Z);
-
-            commands.entity(entity).remove::<Path>();
-            commands.entity(entity).insert(path);
         }
     }
 }
@@ -213,6 +195,20 @@ fn remove_selected_rect(
             commands.entity(entity).despawn();
         }
     };
+}
+
+fn clear_selected(
+    mut commands: Commands,
+    selectable_query: Query<Entity, Added<Selectable>>,
+    mut selected_query: Query<Entity, With<Selected>>,
+) {
+    if selectable_query.is_empty() || selected_query.is_empty() {
+        return;
+    };
+
+    for entity in &mut selected_query {
+        commands.entity(entity).remove::<Selected>();
+    }
 }
 
 fn move_selected_entities(
@@ -264,6 +260,7 @@ fn select_entities(
         (Entity, &GlobalTransform, &Aabb),
         (With<Selectable>, Without<Selected>),
     >,
+    mut selected_query: Query<Entity, With<Selected>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let mut topmost_entity: Option<(Entity, Vec3)> = None;
@@ -288,9 +285,9 @@ fn select_entities(
 
         if let Some((topmost_entity, translation)) = topmost_entity {
             if let Ok((entity, _, _)) = selectable_query.get_mut(topmost_entity) {
-                commands.entity(entity).insert(Selected {
-                    start_position: translation.xy(),
-                });
+                commands
+                    .entity(entity)
+                    .insert(Selected::new(translation.xy()));
             }
         }
     }
