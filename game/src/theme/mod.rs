@@ -43,7 +43,7 @@ fn create_theme(mode: ThemeMode) -> Theme {
             window_bg_color: Palette::SLATE_100,
             post_it_stroke_color: Color::BLACK.with_a(0.7),
             post_it_shadow_color: Palette::GRAY_600.with_a(0.6),
-            default_text_color: Palette::GRAY_700.with_a(0.8),
+            default_text_color: Palette::GRAY_700,
             debug_text_color: Palette::BLACK,
             color_swatch_text_color: Palette::GRAY_700.with_a(0.8),
             default_bg_color: Palette::WHITE,

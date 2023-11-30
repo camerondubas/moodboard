@@ -38,10 +38,6 @@ pub(crate) const SWATCH_COLORS: [Color; 22] = [
     Palette::ROSE_500,
 ];
 
-pub(crate) fn random_color() -> Color {
-    *SWATCH_COLORS.choose(&mut rand::thread_rng()).unwrap()
-}
-
 pub struct ColorSwatchPlugin;
 
 impl Plugin for ColorSwatchPlugin {
@@ -67,8 +63,8 @@ pub(crate) fn spawn_swatch(
     let text = format!("#{:x?}{:x?}{:x?}", rgba[0], rgba[1], rgba[2]);
 
     let text_style = TextStyle {
-        font: font_stack.body.clone(),
-        font_size: 32.0,
+        font: font_stack.body.regular().clone(),
+        font_size: font_stack.size.medium,
         color: theme.default_text_color,
         ..Default::default()
     };

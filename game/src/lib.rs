@@ -72,10 +72,56 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
 
 #[derive(Resource, Default, Debug)]
 pub(crate) struct FontStack {
-    pub body: Handle<Font>,
-    pub title: Handle<Font>,
+    pub body: FontFamily,
+    pub title: FontFamily,
+    pub size: FontSizeMap,
 }
 
+#[derive(Default, Debug)]
+struct FontFamily {
+    regular: Handle<Font>,
+    bold: Option<Handle<Font>>,
+    italic: Option<Handle<Font>>,
+}
+
+impl FontFamily {
+    pub fn regular(&self) -> Handle<Font> {
+        self.regular.clone()
+    }
+
+    pub fn bold(&self) -> Handle<Font> {
+        self.bold.clone().unwrap_or_else(|| self.regular.clone())
+    }
+
+    pub fn italic(&self) -> Handle<Font> {
+        self.italic.clone().unwrap_or_else(|| self.regular.clone())
+    }
+}
+
+#[derive(Debug)]
+pub struct FontSizeMap {
+    pub xxsmall: f32,
+    pub xsmall: f32,
+    pub small: f32,
+    pub medium: f32,
+    pub large: f32,
+    pub xlarge: f32,
+    pub xxlarge: f32,
+}
+
+impl Default for FontSizeMap {
+    fn default() -> Self {
+        Self {
+            xxsmall: 8.0 * 2.,
+            xsmall: 12.0 * 2.,
+            small: 16.0 * 2.,
+            medium: 24.0 * 2.,
+            large: 32.0 * 2.,
+            xlarge: 48.0 * 2.,
+            xxlarge: 64.0 * 2.,
+        }
+    }
+}
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 struct CustomMaterial {}
@@ -94,11 +140,20 @@ fn startup(
     mut font_stack: ResMut<FontStack>,
     asset_server: Res<AssetServer>,
 ) {
-    let font_handle = asset_server.load("fonts/FiraSans-Bold.ttf");
+    let playfair = FontFamily {
+        regular: asset_server.load("fonts/playfair/PlayfairDisplay-Regular.ttf"),
+        bold: Some(asset_server.load("fonts/playfair/PlayfairDisplay-Bold.ttf")),
+        italic: Some(asset_server.load("fonts/playfair/PlayfairDisplay-Italic.ttf")),
+    };
 
-    font_stack.body = font_handle.clone();
-    font_stack.title = font_handle.clone();
+    let source_sans = FontFamily {
+        regular: asset_server.load("fonts/source-sans/SourceSans3-Regular.ttf"),
+        bold: Some(asset_server.load("fonts/source-sans/SourceSans3-Bold.ttf")),
+        italic: Some(asset_server.load("fonts/source-sans/SourceSans3-Italic.ttf")),
+    };
 
+    font_stack.title = playfair;
+    font_stack.body = source_sans;
     let mut swatch_colors = SWATCH_COLORS.choose_multiple(&mut rand::thread_rng(), 4);
 
     spawn_post_it(
@@ -152,16 +207,18 @@ fn startup(
     spawn_text(
         &mut commands,
         &theme,
-        &font_stack,
-        Vec3::new(350., 350., 0.0),
-        "This is an example Moodboard",
+        Vec3::new(400., 370., 0.0),
+        "An Example Moodboard",
+        font_stack.size.xlarge,
+        font_stack.title.bold(),
     );
 
     spawn_text(
         &mut commands,
         &theme,
-        &font_stack,
-        Vec3::new(511., -202., 0.0),
+        Vec3::new(257., 280., 0.0),
         "Try dragging things around!",
+        font_stack.size.large,
+        font_stack.body.italic(),
     );
 }

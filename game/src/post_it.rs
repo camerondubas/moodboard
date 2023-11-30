@@ -88,8 +88,8 @@ pub(crate) fn spawn_post_it(
     text: &str,
 ) {
     let text_style = TextStyle {
-        font: font_stack.body.clone(),
-        font_size: 32.0,
+        font: font_stack.body.regular().clone(),
+        font_size: font_stack.size.medium,
         color: theme.default_text_color,
         ..Default::default()
     };

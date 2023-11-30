@@ -9,7 +9,6 @@ use crate::{
 };
 
 const TEXT_SELECTED_PADDING: Vec2 = Vec2::new(20., 20.);
-const FONT_SIZE: f32 = 48.0;
 
 pub struct TextPlugin;
 
@@ -28,13 +27,14 @@ pub struct CanvasTextText;
 pub(crate) fn spawn_text(
     commands: &mut Commands,
     theme: &Theme,
-    font_stack: &FontStack,
     position: Vec3,
     text: impl Into<String>,
+    size: f32,
+    font: Handle<Font>,
 ) {
     let text_style = TextStyle {
-        font: font_stack.body.clone(),
-        font_size: FONT_SIZE,
+        font: font,
+        font_size: size,
         color: theme.default_text_color,
         ..Default::default()
     };
@@ -120,9 +120,10 @@ fn add_text(
             spawn_text(
                 &mut commands,
                 &theme,
-                &font_stack,
                 Vec3::new(0., 0., 0.0),
                 value.clone(),
+                font_stack.size.large,
+                font_stack.body.regular().clone(),
             );
         }
     }
