@@ -57,6 +57,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
             ShapePlugin,
             PostItPlugin,
             ColorSwatchPlugin,
+            TextPlugin,
             ItemPlugin,
             SelectPlugin,
         ))
