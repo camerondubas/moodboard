@@ -13,6 +13,7 @@ pub mod theme;
 mod ui;
 
 use bevy::{
+    asset::AssetMetaCheck,
     render::render_resource::{AsBindGroup, ShaderRef},
     sprite::Material2d,
     window::WindowResolution,
@@ -20,13 +21,14 @@ use bevy::{
 use camera::CameraPlugin;
 use canvas::CanvasPlugin;
 
-use color_swatch::{random_color, spawn_swatch, ColorSwatchPlugin};
+use color_swatch::{spawn_swatch, ColorSwatchPlugin, SWATCH_COLORS};
 #[cfg(any(feature = "debug", rust_analyzer))]
 use debug::DebugPlugin;
 use events::{Shared, SharedState};
 use item::ItemPlugin;
 use post_it::{spawn_post_it, PostItPlugin};
 use prelude::*;
+use rand::seq::SliceRandom;
 use select::SelectPlugin;
 use text::{spawn_text, TextPlugin};
 use theme::{Theme, ThemePlugin};
