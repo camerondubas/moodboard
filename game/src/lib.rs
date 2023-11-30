@@ -25,7 +25,7 @@ use color_swatch::{random_color, spawn_swatch, ColorSwatchPlugin};
 use debug::DebugPlugin;
 use events::{Shared, SharedState};
 use item::ItemPlugin;
-use post_it::{draw_post_it, PostItPlugin};
+use post_it::{spawn_post_it, PostItPlugin};
 use prelude::*;
 use select::SelectPlugin;
 use text::{spawn_text, TextPlugin};
@@ -37,6 +37,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
 
     App::new()
         .insert_resource(ClearColor(Color::BLACK))
+        .insert_resource(AssetMetaCheck::Never)
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -63,8 +64,15 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
         ))
         .add_systems(Startup, startup)
         .insert_resource(SharedResource(shared_state))
+        .init_resource::<FontStack>()
         .run();
 }
+
+#[derive(Resource, Default)]
+pub struct FontStack {
+    pub body: Handle<Font>,
+}
+
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 struct CustomMaterial {}
@@ -77,22 +85,29 @@ impl Material2d for CustomMaterial {
 #[derive(Resource)]
 pub struct SharedResource(Shared<SharedState>);
 
-fn startup(mut commands: Commands, theme: Res<Theme>) {
-    let text = "This is some default Text";
+fn startup(
+    mut commands: Commands,
+    theme: Res<Theme>,
+    mut font_stack: ResMut<FontStack>,
+    asset_server: Res<AssetServer>,
+) {
+    let font_handle = asset_server.load("fonts/FiraSans-Bold.ttf");
 
-    draw_post_it(
+    font_stack.body = font_handle.clone();
+
+    spawn_post_it(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(-500., 200., 0.0),
-        theme.post_it_colors[0],
         "This is a Post-It. \n\nYou can add more by clicking the chat bubble icon above.",
     );
 
-    draw_post_it(
+    spawn_post_it(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(-64., -87., 0.0),
-        theme.post_it_colors[1],
         "You can also add color swatches and text boxes.",
     );
 

@@ -1,5 +1,4 @@
 use bevy::text::{BreakLineOn, Text2dBounds};
-use rand::seq::SliceRandom;
 
 use crate::{
     events::AddItemEvent,
@@ -7,6 +6,7 @@ use crate::{
     prelude::*,
     select::components::Selected,
     theme::{Theme, ThemeDidChange},
+    FontStack,
 };
 
 const POST_IT_SIZE: Vec2 = Vec2::new(400., 420.);
@@ -38,18 +38,19 @@ pub struct PostItShadow;
 #[derive(Component)]
 pub struct PostItText;
 
-fn add_post_it(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
+fn add_post_it(
+    mut commands: Commands,
+    mut events: EventReader<AddItemEvent>,
+    theme: Res<Theme>,
+    font_stack: Res<FontStack>,
+) {
     for event in events.read() {
         if let AddItemEvent::PostIt(text) = event {
-            let color = theme
-                .post_it_colors
-                .choose(&mut rand::thread_rng())
-                .unwrap();
-            draw_post_it(
+            spawn_post_it(
                 &mut commands,
                 &theme,
+                &font_stack,
                 Vec3::new(0., 0., 0.0),
-                *color,
                 text.as_str(),
             );
         }
@@ -79,14 +80,15 @@ fn remove_select(
     }
 }
 
-pub(crate) fn draw_post_it(
+pub(crate) fn spawn_post_it(
     commands: &mut Commands,
     theme: &Theme,
+    font_stack: &FontStack,
     position: Vec3,
-    color: Color,
     text: &str,
 ) {
     let text_style = TextStyle {
+        font: font_stack.body.clone(),
         font_size: 32.0,
         color: theme.default_text_color,
         ..Default::default()
