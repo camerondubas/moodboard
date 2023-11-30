@@ -13,7 +13,7 @@ use crate::{
 const SWATCH_SIZE: Vec2 = Vec2::new(220., 250.);
 const SWATCH_COLOR_SECTION_SIZE: Vec2 = Vec2::new(215., 150.);
 const SWATCH_STROKE_WIDTH: f32 = 5.0;
-const SWATCH_COLORS: [Color; 22] = [
+pub(crate) const SWATCH_COLORS: [Color; 22] = [
     Palette::SLATE_500,
     Palette::GRAY_500,
     Palette::ZINC_500,
@@ -61,7 +61,7 @@ pub(crate) fn spawn_swatch(
     theme: &Theme,
     font_stack: &FontStack,
     position: Vec3,
-    color: Color,
+    color: &Color,
 ) {
     let rgba = color.as_rgba_u8();
     let text = format!("#{:x?}{:x?}{:x?}", rgba[0], rgba[1], rgba[2]);
@@ -104,7 +104,7 @@ pub(crate) fn spawn_swatch(
                     ))),
                     ..Default::default()
                 },
-                Fill::color(color),
+                Fill::color(*color),
                 Name::new("Swatch Color"),
             ));
 
@@ -178,7 +178,7 @@ fn add_swatch(
                 &theme,
                 &font_stack,
                 Vec3::new(0., 0., 0.0),
-                random_color(),
+                SWATCH_COLORS.choose(&mut rand::thread_rng()).unwrap(),
             );
         }
     }

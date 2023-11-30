@@ -97,6 +97,8 @@ fn startup(
     font_stack.body = font_handle.clone();
     font_stack.title = font_handle.clone();
 
+    let mut swatch_colors = SWATCH_COLORS.choose_multiple(&mut rand::thread_rng(), 4);
+
     spawn_post_it(
         &mut commands,
         &theme,
@@ -118,7 +120,7 @@ fn startup(
         &theme,
         &font_stack,
         Vec3::new(-150., 283., 0.0),
-        random_color(),
+        swatch_colors.next().unwrap(),
     );
 
     spawn_swatch(
@@ -126,7 +128,7 @@ fn startup(
         &theme,
         &font_stack,
         Vec3::new(286., -2., 0.0),
-        random_color(),
+        swatch_colors.next().unwrap(),
     );
 
     spawn_swatch(
@@ -134,7 +136,7 @@ fn startup(
         &theme,
         &font_stack,
         Vec3::new(535., -2., 0.0),
-        random_color(),
+        swatch_colors.next().unwrap(),
     );
 
     spawn_swatch(
@@ -142,7 +144,7 @@ fn startup(
         &theme,
         &font_stack,
         Vec3::new(-408., -170., 0.0),
-        random_color(),
+        swatch_colors.next().unwrap(),
     );
 
     spawn_text(
