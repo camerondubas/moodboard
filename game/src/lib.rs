@@ -69,7 +69,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
 }
 
 #[derive(Resource, Default, Debug)]
-pub struct FontStack {
+pub(crate) struct FontStack {
     pub body: Handle<Font>,
     pub title: Handle<Font>,
 }

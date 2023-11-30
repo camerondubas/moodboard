@@ -83,7 +83,6 @@ fn increment_item_counter(
 
 fn delete_item(
     mut commands: Commands,
-    query: Query<(Entity, &Deletable), With<Item>>,
     selected_query: Query<Entity, With<Selected>>,
     keys: Res<Input<KeyCode>>,
 ) {

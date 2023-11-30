@@ -171,7 +171,7 @@ fn add_swatch(
     font_stack: Res<FontStack>,
 ) {
     for event in events.read() {
-        if let AddItemEvent::Swatch(color) = event {
+        if let AddItemEvent::Swatch(_color) = event {
             // let color = Color::hex(color).unwrap();
             spawn_swatch(
                 &mut commands,

@@ -85,9 +85,7 @@ fn start_selection_box(
 }
 
 fn size_selection_box(
-    mut commands: Commands,
     cursor_coords: Res<CursorCoords>,
-    selectable_query: Query<(Entity, &GlobalTransform, &Aabb), With<Selectable>>,
     mut selection_box_query: Query<
         (&mut SelectionBox, &mut Path),
         (With<SelectionBox>, With<Path>, Without<Selectable>),
@@ -148,7 +146,6 @@ fn create_selected_rect(
 }
 
 fn update_selected_rect(
-    mut commands: Commands,
     new_selected_query: Query<Entity, Added<Selected>>,
     selected_query: Query<(&GlobalTransform, &Aabb), With<Selected>>,
     mut selected_rect_query: Query<(&mut SelectedRect, &mut Transform, &mut Path)>,
@@ -219,7 +216,7 @@ fn move_selected_entities(
         return;
     }
     if mouse_button_input.just_pressed(MouseButton::Left) && !selected_query.is_empty() {
-        if let Ok((mut selected_rect, _)) = selected_rect_query.get_single_mut() {
+        if let Ok((selected_rect, _)) = selected_rect_query.get_single() {
             if !selected_rect.initial_rect().contains(cursor_coords.current) {
                 for (entity, _, _) in &mut selected_query {
                     commands.entity(entity).remove::<Selected>();
@@ -258,10 +255,9 @@ fn select_entities(
         (Entity, &GlobalTransform, &Aabb),
         (With<Selectable>, Without<Selected>),
     >,
-    mut selected_query: Query<Entity, With<Selected>>,
-    mut selection_box_query: Query<&mut SelectionBox, Without<Selectable>>,
+    selection_box_query: Query<&SelectionBox, Without<Selectable>>,
 ) {
-    if let Ok(mut selection_box) = selection_box_query.get_single_mut() {
+    if let Ok(selection_box) = selection_box_query.get_single() {
         let selection_rect = selection_box.rect();
 
         selectable_query.for_each(|(selectable_entity, transform, aabb)| {

@@ -29,7 +29,6 @@ pub(crate) struct ThemeDidChange {
 #[derive(Resource, Clone)]
 pub(crate) struct Theme {
     pub window_bg_color: Color,
-    pub post_it_colors: [Color; 6],
     pub post_it_stroke_color: Color,
     pub post_it_shadow_color: Color,
     pub default_text_color: Color,
@@ -42,14 +41,6 @@ fn create_theme(mode: ThemeMode) -> Theme {
     match mode {
         ThemeMode::Light => Theme {
             window_bg_color: Palette::SLATE_100,
-            post_it_colors: [
-                Palette::AMBER_200,
-                Palette::GREEN_300,
-                Palette::PURPLE_300,
-                Palette::BLUE_300,
-                Palette::PINK_300,
-                Palette::SLATE_400,
-            ],
             post_it_stroke_color: Color::BLACK.with_a(0.7),
             post_it_shadow_color: Palette::GRAY_600.with_a(0.6),
             default_text_color: Palette::GRAY_700.with_a(0.8),
@@ -59,14 +50,6 @@ fn create_theme(mode: ThemeMode) -> Theme {
         },
         ThemeMode::Dark => Theme {
             window_bg_color: Palette::SLATE_900,
-            post_it_colors: [
-                Palette::AMBER_700,
-                Palette::GREEN_600,
-                Palette::PURPLE_600,
-                Palette::BLUE_600,
-                Palette::PINK_700,
-                Palette::SLATE_600,
-            ],
             post_it_stroke_color: Color::BLACK.with_a(0.7),
             post_it_shadow_color: Palette::GRAY_600.with_a(0.9),
             default_text_color: Palette::GRAY_200.with_a(0.8),
