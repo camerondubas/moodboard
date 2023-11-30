@@ -17,7 +17,7 @@ pub struct PostItPlugin;
 
 impl Plugin for PostItPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, draw_initial_post_its).add_systems(
+        app.add_systems(
             Update,
             (
                 add_post_it,
@@ -37,58 +37,6 @@ pub struct PostItShadow;
 
 #[derive(Component)]
 pub struct PostItText;
-
-fn draw_initial_post_its(mut commands: Commands, theme: Res<Theme>) {
-    let text = "This is some default Text";
-
-    draw_post_it(
-        &mut commands,
-        &theme,
-        Vec3::new(-600., 300., 0.0),
-        theme.post_it_colors[0],
-        text,
-    );
-
-    draw_post_it(
-        &mut commands,
-        &theme,
-        Vec3::new(0., 300., 0.0),
-        theme.post_it_colors[1],
-        text,
-    );
-
-    draw_post_it(
-        &mut commands,
-        &theme,
-        Vec3::new(600., 300., 0.0),
-        theme.post_it_colors[2],
-        text,
-    );
-
-    draw_post_it(
-        &mut commands,
-        &theme,
-        Vec3::new(-600., -300., 0.0),
-        theme.post_it_colors[3],
-        text,
-    );
-
-    draw_post_it(
-        &mut commands,
-        &theme,
-        Vec3::new(0., -300., 0.0),
-        theme.post_it_colors[4],
-        text,
-    );
-
-    draw_post_it(
-        &mut commands,
-        &theme,
-        Vec3::new(600., -300., 0.0),
-        theme.post_it_colors[5],
-        text,
-    );
-}
 
 fn add_post_it(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
     for event in events.read() {
@@ -131,7 +79,13 @@ fn remove_select(
     }
 }
 
-fn draw_post_it(commands: &mut Commands, theme: &Theme, position: Vec3, color: Color, text: &str) {
+pub(crate) fn draw_post_it(
+    commands: &mut Commands,
+    theme: &Theme,
+    position: Vec3,
+    color: Color,
+    text: &str,
+) {
     let text_style = TextStyle {
         font_size: 32.0,
         color: theme.default_text_color,

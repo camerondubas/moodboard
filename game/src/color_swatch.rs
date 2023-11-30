@@ -37,12 +37,15 @@ const SWATCH_COLORS: [Color; 22] = [
     Palette::ROSE_500,
 ];
 
+pub(crate) fn random_color() -> Color {
+    *SWATCH_COLORS.choose(&mut rand::thread_rng()).unwrap()
+}
+
 pub struct ColorSwatchPlugin;
 
 impl Plugin for ColorSwatchPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, draw_initial_swatches)
-            .add_systems(Update, (add_swatch, on_theme_change));
+        app.add_systems(Update, (add_swatch, on_theme_change));
     }
 }
 
@@ -52,28 +55,12 @@ pub struct ColorSwatch;
 #[derive(Component)]
 pub struct ColorSwatchText;
 
-fn draw_initial_swatches(mut commands: Commands, theme: Res<Theme>) {
-    spawn_swatch(
-        &mut commands,
-        &theme,
-        Vec3::new(1000., 300., 0.0),
-        Palette::RED_500,
-    );
-    spawn_swatch(
-        &mut commands,
-        &theme,
-        Vec3::new(1000., 0., 0.0),
-        Palette::GREEN_500,
-    );
-    spawn_swatch(
-        &mut commands,
-        &theme,
-        Vec3::new(1000., -300., 0.0),
-        Palette::BLUE_500,
-    );
-}
-
-fn spawn_swatch(commands: &mut Commands, theme: &Res<Theme>, position: Vec3, color: Color) {
+pub(crate) fn spawn_swatch(
+    commands: &mut Commands,
+    theme: &Res<Theme>,
+    position: Vec3,
+    color: Color,
+) {
     let rgba = color.as_rgba_u8();
     let text = format!("#{:x?}{:x?}{:x?}", rgba[0], rgba[1], rgba[2]);
 
@@ -178,11 +165,12 @@ fn add_swatch(mut commands: Commands, mut events: EventReader<AddItemEvent>, the
     for event in events.read() {
         if let AddItemEvent::Swatch(color) = event {
             // let color = Color::hex(color).unwrap();
-            let color = SWATCH_COLORS
-                .choose(&mut rand::thread_rng())
-                .unwrap()
-                .clone();
-            spawn_swatch(&mut commands, &theme, Vec3::new(0., 0., 0.0), color);
+            spawn_swatch(
+                &mut commands,
+                &theme,
+                Vec3::new(0., 0., 0.0),
+                random_color(),
+            );
         }
     }
 }

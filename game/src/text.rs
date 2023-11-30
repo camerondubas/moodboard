@@ -14,8 +14,7 @@ pub struct TextPlugin;
 
 impl Plugin for TextPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, draw_initial_text)
-            .add_systems(Update, (update_textbox_size, on_theme_change, add_text));
+        app.add_systems(Update, (update_textbox_size, on_theme_change, add_text));
     }
 }
 
@@ -25,16 +24,12 @@ pub struct CanvasText;
 #[derive(Component)]
 pub struct CanvasTextText;
 
-fn draw_initial_text(mut commands: Commands, theme: Res<Theme>) {
-    spawn_text(
-        &mut commands,
-        &theme,
-        Vec3::new(0., 600., 0.0),
-        "This is some default Text".into(),
-    );
-}
-
-fn spawn_text(commands: &mut Commands, theme: &Res<Theme>, position: Vec3, text: String) {
+pub(crate) fn spawn_text(
+    commands: &mut Commands,
+    theme: &Res<Theme>,
+    position: Vec3,
+    text: String,
+) {
     let text_style = TextStyle {
         font_size: FONT_SIZE,
         color: theme.default_text_color,
