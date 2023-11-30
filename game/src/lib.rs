@@ -68,9 +68,10 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
         .run();
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Debug)]
 pub struct FontStack {
     pub body: Handle<Font>,
+    pub title: Handle<Font>,
 }
 
 
@@ -94,6 +95,7 @@ fn startup(
     let font_handle = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     font_stack.body = font_handle.clone();
+    font_stack.title = font_handle.clone();
 
     spawn_post_it(
         &mut commands,
@@ -142,14 +144,16 @@ fn startup(
     spawn_text(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(350., 350., 0.0),
-        "This is an example Moodboard".into(),
+        "This is an example Moodboard",
     );
 
     spawn_text(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(511., -202., 0.0),
-        "Try dragging things around!".into(),
+        "Try dragging things around!",
     );
 }

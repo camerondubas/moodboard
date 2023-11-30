@@ -5,6 +5,7 @@ use crate::{
     item::ItemBundle,
     prelude::*,
     theme::{Theme, ThemeDidChange},
+    FontStack,
 };
 
 const TEXT_SELECTED_PADDING: Vec2 = Vec2::new(20., 20.);
@@ -26,11 +27,13 @@ pub struct CanvasTextText;
 
 pub(crate) fn spawn_text(
     commands: &mut Commands,
-    theme: &Res<Theme>,
+    theme: &Theme,
+    font_stack: &FontStack,
     position: Vec3,
-    text: String,
+    text: impl Into<String>,
 ) {
     let text_style = TextStyle {
+        font: font_stack.body.clone(),
         font_size: FONT_SIZE,
         color: theme.default_text_color,
         ..Default::default()
@@ -99,23 +102,28 @@ fn on_theme_change(
 ) {
     for event in theme_event_reader.read() {
         for mut text in text_query.iter_mut() {
-            let text_style = TextStyle {
-                font_size: FONT_SIZE,
-                color: event.theme.default_text_color,
-                ..Default::default()
-            };
-
             for section in text.sections.iter_mut() {
-                section.style = text_style.clone();
+                section.style.color = event.theme.default_text_color
             }
         }
     }
 }
 
-fn add_text(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
+fn add_text(
+    mut commands: Commands,
+    mut events: EventReader<AddItemEvent>,
+    theme: Res<Theme>,
+    font_stack: Res<FontStack>,
+) {
     for event in events.read() {
         if let AddItemEvent::Text(value) = event {
-            spawn_text(&mut commands, &theme, Vec3::new(0., 0., 0.0), value.clone());
+            spawn_text(
+                &mut commands,
+                &theme,
+                &font_stack,
+                Vec3::new(0., 0., 0.0),
+                value.clone(),
+            );
         }
     }
 }
