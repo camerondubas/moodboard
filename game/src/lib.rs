@@ -116,6 +116,7 @@ fn startup(
     spawn_swatch(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(-150., 283., 0.0),
         random_color(),
     );
@@ -123,6 +124,7 @@ fn startup(
     spawn_swatch(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(286., -2., 0.0),
         random_color(),
     );
@@ -130,6 +132,7 @@ fn startup(
     spawn_swatch(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(535., -2., 0.0),
         random_color(),
     );
@@ -137,6 +140,7 @@ fn startup(
     spawn_swatch(
         &mut commands,
         &theme,
+        &font_stack,
         Vec3::new(-408., -170., 0.0),
         random_color(),
     );

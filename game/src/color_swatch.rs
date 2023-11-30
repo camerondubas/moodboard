@@ -7,6 +7,7 @@ use crate::{
     post_it::PostItShadow,
     prelude::*,
     theme::{Theme, ThemeDidChange},
+    FontStack,
 };
 
 const SWATCH_SIZE: Vec2 = Vec2::new(220., 250.);
@@ -57,7 +58,8 @@ pub struct ColorSwatchText;
 
 pub(crate) fn spawn_swatch(
     commands: &mut Commands,
-    theme: &Res<Theme>,
+    theme: &Theme,
+    font_stack: &FontStack,
     position: Vec3,
     color: Color,
 ) {
@@ -65,6 +67,7 @@ pub(crate) fn spawn_swatch(
     let text = format!("#{:x?}{:x?}{:x?}", rgba[0], rgba[1], rgba[2]);
 
     let text_style = TextStyle {
+        font: font_stack.body.clone(),
         font_size: 32.0,
         color: theme.default_text_color,
         ..Default::default()
@@ -161,13 +164,19 @@ fn on_theme_change(
     }
 }
 
-fn add_swatch(mut commands: Commands, mut events: EventReader<AddItemEvent>, theme: Res<Theme>) {
+fn add_swatch(
+    mut commands: Commands,
+    mut events: EventReader<AddItemEvent>,
+    theme: Res<Theme>,
+    font_stack: Res<FontStack>,
+) {
     for event in events.read() {
         if let AddItemEvent::Swatch(color) = event {
             // let color = Color::hex(color).unwrap();
             spawn_swatch(
                 &mut commands,
                 &theme,
+                &font_stack,
                 Vec3::new(0., 0., 0.0),
                 random_color(),
             );
