@@ -19,9 +19,15 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn(camera).insert(PanCam {
         grab_buttons: vec![MouseButton::Middle],
         // Set max scale in order to prevent the camera from zooming too far out
-        max_scale: Some(10.),
+        max_scale: Some(4.),
         // Set min scale in order to prevent the camera from zooming too far in
         min_scale: 1.0,
+
+        min_y: Some(-3000.),
+        max_y: Some(3000.),
+        max_x: Some(4000.),
+        min_x: Some(-4000.),
+
         ..Default::default()
     });
 }
