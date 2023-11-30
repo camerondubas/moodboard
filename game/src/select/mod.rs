@@ -27,17 +27,18 @@ impl Plugin for SelectPlugin {
                 create_selected_rect,
                 update_selected_rect,
                 select_entities,
-                move_selected_entities.after(select_entities),
+                move_selected_entities,
                 remove_selected_rect.after(move_selected_entities),
                 start_selection_box,
                 size_selection_box,
                 end_selection_box.after(size_selection_box),
-                clear_selected,
+                clear_selected_on_insert,
             ),
         );
     }
 }
 
+// Selection Box Systems
 fn start_selection_box(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
@@ -100,21 +101,6 @@ fn size_selection_box(
         });
 
         selection_box.update(cursor_coords.current);
-
-        let selection_rect = selection_box.rect();
-
-        selectable_query.for_each(|(selectable_entity, transform, aabb)| {
-            let position = transform.translation().xy();
-            let selectable_rect = Rect::from_center_half_size(position, aabb.half_extents.xy());
-
-            if !selection_rect.intersect(selectable_rect).is_empty() {
-                commands
-                    .entity(selectable_entity)
-                    .insert(Selected::new(position));
-            } else {
-                commands.entity(selectable_entity).remove::<Selected>();
-            }
-        });
     }
 }
 
@@ -130,6 +116,7 @@ fn end_selection_box(
     }
 }
 
+// Selected Rect Systems
 fn create_selected_rect(
     mut commands: Commands,
     newly_selected_query: Query<(&GlobalTransform, &Aabb), Added<Selected>>,
@@ -197,12 +184,12 @@ fn remove_selected_rect(
     };
 }
 
-fn clear_selected(
+fn clear_selected_on_insert(
     mut commands: Commands,
-    selectable_query: Query<Entity, Added<Selectable>>,
+    newly_selectable_query: Query<Entity, Added<Selectable>>,
     mut selected_query: Query<Entity, With<Selected>>,
 ) {
-    if selectable_query.is_empty() || selected_query.is_empty() {
+    if newly_selectable_query.is_empty() || selected_query.is_empty() {
         return;
     };
 
@@ -212,22 +199,33 @@ fn clear_selected(
 }
 
 fn move_selected_entities(
+    mut commands: Commands,
     cursor_coords: Res<CursorCoords>,
     mouse_button_input: Res<Input<MouseButton>>,
     mut selected_rect_query: Query<(&mut SelectedRect, &mut Transform), Without<Selected>>,
     selection_box_query: Query<&SelectionBox>,
-    mut selected_query: Query<(&mut Selected, &mut Transform)>,
+    mut selected_query: Query<(Entity, &mut Selected, &mut Transform)>,
 ) {
+    // Commit new positions on mouse release
     if mouse_button_input.just_released(MouseButton::Left) {
         if let Ok((mut selected_rect, _)) = selected_rect_query.get_single_mut() {
             selected_rect.commit();
 
-            for (mut selected, transform) in &mut selected_query {
+            for (_, mut selected, transform) in &mut selected_query {
                 selected.start_position = transform.translation.xy();
             }
         }
 
         return;
+    }
+    if mouse_button_input.just_pressed(MouseButton::Left) && !selected_query.is_empty() {
+        if let Ok((mut selected_rect, _)) = selected_rect_query.get_single_mut() {
+            if !selected_rect.initial_rect().contains(cursor_coords.current) {
+                for (entity, _, _) in &mut selected_query {
+                    commands.entity(entity).remove::<Selected>();
+                }
+            }
+        }
     }
 
     if mouse_button_input.pressed(MouseButton::Left) && selection_box_query.is_empty() {
@@ -239,13 +237,13 @@ fn move_selected_entities(
 
                     transform.translation = (start + distance).extend(transform.translation.z);
                     selected_rect.move_to(transform.translation.xy());
-                }
 
-                for (selected, mut transform) in &mut selected_query {
-                    let distance = cursor_coords.hold_distance();
-                    let start = selected.start_position;
+                    for (_, selected, mut transform) in &mut selected_query {
+                        let distance = cursor_coords.hold_distance();
+                        let start = selected.start_position;
 
-                    transform.translation = (start + distance).extend(transform.translation.z);
+                        transform.translation = (start + distance).extend(transform.translation.z);
+                    }
                 }
             }
         }
@@ -261,7 +259,25 @@ fn select_entities(
         (With<Selectable>, Without<Selected>),
     >,
     mut selected_query: Query<Entity, With<Selected>>,
+    mut selection_box_query: Query<&mut SelectionBox, Without<Selectable>>,
 ) {
+    if let Ok(mut selection_box) = selection_box_query.get_single_mut() {
+        let selection_rect = selection_box.rect();
+
+        selectable_query.for_each(|(selectable_entity, transform, aabb)| {
+            let position = transform.translation().xy();
+            let selectable_rect = Rect::from_center_half_size(position, aabb.half_extents.xy());
+
+            if !selection_rect.intersect(selectable_rect).is_empty() {
+                commands
+                    .entity(selectable_entity)
+                    .insert(Selected::new(position));
+            } else {
+                commands.entity(selectable_entity).remove::<Selected>();
+            }
+        });
+    }
+
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let mut topmost_entity: Option<(Entity, Vec3)> = None;
         // If this gets more complex, look into this package:
