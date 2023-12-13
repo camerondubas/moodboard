@@ -16,6 +16,7 @@ use bevy::{
     asset::AssetMetaCheck,
     render::render_resource::{AsBindGroup, ShaderRef},
     sprite::Material2d,
+    utils::HashMap,
     window::WindowResolution,
 };
 use camera::CameraPlugin;
@@ -26,7 +27,7 @@ use color_swatch::{spawn_swatch, ColorSwatchPlugin, SWATCH_COLORS};
 use debug::DebugPlugin;
 use events::{Shared, SharedState};
 use item::ItemPlugin;
-use post_it::{spawn_post_it, PostItPlugin};
+use post_it::{spawn_image, spawn_post_it, PostItPlugin};
 use prelude::*;
 use rand::seq::SliceRandom;
 use select::SelectPlugin;
@@ -40,6 +41,7 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
     App::new()
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(AssetMetaCheck::Never)
+        .init_resource::<ImageCache>()
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -68,6 +70,11 @@ pub fn run(event_plugin: impl Plugin, shared_state: Shared<SharedState>) {
         .insert_resource(SharedResource(shared_state))
         .init_resource::<FontStack>()
         .run();
+}
+
+#[derive(Resource, Default, Debug)]
+pub(crate) struct ImageCache {
+    pub images: HashMap<Handle<Image>, Entity>,
 }
 
 #[derive(Resource, Default, Debug)]
@@ -139,6 +146,7 @@ fn startup(
     theme: Res<Theme>,
     mut font_stack: ResMut<FontStack>,
     asset_server: Res<AssetServer>,
+    mut image_cache: ResMut<ImageCache>,
 ) {
     let playfair = FontFamily {
         regular: asset_server.load("fonts/playfair/PlayfairDisplay-Regular.ttf"),
@@ -220,5 +228,15 @@ fn startup(
         "Try dragging things around!",
         font_stack.size.large,
         font_stack.body.italic(),
+    );
+
+    let image = asset_server.load("images/night_lights.jpg");
+
+    spawn_image(
+        &mut commands,
+        &theme,
+        Vec3::new(576., -424., 0.0),
+        image,
+        &mut image_cache,
     );
 }
